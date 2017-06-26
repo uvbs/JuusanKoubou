@@ -1,0 +1,16 @@
+ipdb/__init__.py,sha256=pvW5dKmnY1tidsUG2BpFcxLxiYtzou40s9IQlUahorc,507
+ipdb/__main__.py,sha256=P3HkzT-KyvsbM0ei3pKYwAIlveFUafQkQwQ7KRnUqqQ,7230
+ipdb/stdout.py,sha256=YvuqHMEJQDrwNNe2XPpLG6Snd-DjyUFSl6QvARsDjfs,807
+ipdb-0.10.3.dist-info/DESCRIPTION.rst,sha256=uGrPRczgXCxDaY83wWgi_jvxs0OuNxhzmifNo-D7apw,7474
+ipdb-0.10.3.dist-info/METADATA,sha256=3YzTU4rSXRJxbwWGiXg53__YE0Z6lJSAPP3Xsm62YaE,8478
+ipdb-0.10.3.dist-info/RECORD,,
+ipdb-0.10.3.dist-info/WHEEL,sha256=gWAES50ONnh9VmlT97ZMBvKahdLuKpWmYO5qi_kh0PE,98
+ipdb-0.10.3.dist-info/entry_points.txt,sha256=FLOujWgZeK4GBpGqhuTFcdcpJz2zkNmMdHwSzorcwDo,46
+ipdb-0.10.3.dist-info/metadata.json,sha256=L4cxJJOS2lRYfjg_H2lWudJ__fMiptIGRUxMSY6tN-Q,1365
+ipdb-0.10.3.dist-info/top_level.txt,sha256=OywfuX9P9lvtyhERdr0WoH17GEyeYH9-sqs24Wtg394,5
+ipdb-0.10.3.dist-info/zip-safe,sha256=AbpHGcgLb-kRsJGnwFEktk7uzpZOCcBY74-YBdrKVGs,1
+../../Scripts/ipdb3.exe,sha256=FLmr8vdSLFO9ZwO50sFLXvuj9DCuqRdd2gIA4eRCoSI,98137
+ipdb-0.10.3.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+ipdb/__pycache__/stdout.cpython-36.pyc,,
+ipdb/__pycache__/__init__.cpython-36.pyc,,
+ipdb/__pycache__/__main__.cpython-36.pyc,,
