@@ -96,7 +96,9 @@
     <ClInclude Include="ed6fc.h" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="ed6fc.def" />
+    <CustomBuild Include="ed6fc.def">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

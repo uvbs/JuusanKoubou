@@ -649,7 +649,7 @@ BOOL Initialize(PVOID BaseAddress)
         }
     );
 
-    static FLOAT DefaultTextX = 3;
+    static FLOAT DefaultPlaceNameTextXDelta = 0;
 
     PATCH_MEMORY_DATA p[] =
     {
@@ -750,10 +750,15 @@ BOOL Initialize(PVOID BaseAddress)
 
         // char type switch table
         MemoryPatchVa(0x0404ull,    2, 0x48102E),
-        MemoryPatchVa((ULONG64)&DefaultTextX,    4, 0x476015),
 
         // jp font size limit
         MemoryPatchVa(0xEBull,      1, 0x4D6FA4),
+
+        // HP EP font size
+        MemoryPatchVa(0x02ull,      1, 0x47223B),
+
+        // place name text X delta
+        MemoryPatchVa((ULONG64)&DefaultPlaceNameTextXDelta,      4, 0x4B1C41),
 
         FunctionJumpVa(Success ? Functions.GetGlyphsBitmap       : IMAGE_INVALID_VA, GetGlyphsBitmap, &StubGetGlyphsBitmap),
         FunctionJumpVa(Success ? Functions.DrawTalkText          : IMAGE_INVALID_VA, DrawTalkText),

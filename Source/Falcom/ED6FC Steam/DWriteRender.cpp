@@ -317,7 +317,7 @@ DrawRune(
         }
     }
 
-    out = (PBYTE)output;
+    out = (PBYTE)output + outputStride * 1;
     for (LONG_PTR h = fontSize; h != 0; --h)
     {
         PUSHORT o = (PUSHORT)out - 1;
