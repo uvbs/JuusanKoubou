@@ -22,8 +22,6 @@ Cargo.lock
 
 ImmPyCommands/*.pyc
 ImmPyLibs/*.pyc
-Source/sources/3dlearn
-Source/sources/bluepillstudy
 /TempSync/Vim/_font
 /TempSync/Vim/_vimsize
 /TempSync/Vim/_vimsize2
@@ -42,23 +40,6 @@ Source/ShimEngine
 Source/Falcom/src/
 Source/Falcom/pkg/
 /Source/Falcom/ZWEI2Plus/zw
-Source/sources/ReactOS*
-Source/sources/loki-lib
-Source/sources/AvalonDock
-Source/sources/dshow_x264
-Source/sources/eadv020plus
-Source/sources/FluentRibbon
-Source/sources/kirikiri2
-Source/sources/processhacker
-Source/sources/Python 2.73
-Source/sources/reactos
-Source/sources/win2k
-Source/sources/windbg64
-Source/sources/KAV8.zip
-Source/sources/ph.part*.rar
-Source/sources/windows_2000_source_code.zip
-Source/sources/WRK-v1.2
-Source/sources/libimobiledevice
 
 Source/Test_Drv
 Source/LocaleEmulator/LocaleEmulator/win32k_x64_win8.i64
@@ -72,8 +53,6 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 /PyLibs/eric5*
 
 /Source/WG/
-/Source/sources/pyv8
-/Source/sources/v8
 /Library/.Net/FluorineFx/
 
 /Source/Hooks/KrKr2Protect
@@ -85,17 +64,14 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 /TempSync/SublimeText Packages/User/Preferences.sublime-settings
 /Source/Project/Glorius
 /Library/qt-everywhere-opensource-src-5.3.0
-/Source/sources/x64_dbg
 /Source/Android/*/bin
 /Source/Android/*/gen
 /Source/Android/.metadata/.log
 /Source/Android/.metadata/*/.log
 /Source/Android/.metadata/.plugins/
 /Source/Android/*/.settings/
-/Source/sources/Python-*
 /Source/Android/hookTaobao
 /Source/Project/PythonProtector
-/Source/sources/cpython
 /Source/Test_Con/python
 /Source/Android/.metadata
 
@@ -120,10 +96,8 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 /TempSync/SublimeText Packages/User/*.*-ca-bundle
 /Source/GoProject/src/AppleIdRegister
 /Source/GoProject/pkg
-/Source/sources/qt
 /Source/Project/AppleIdAuthorizer
 /Source/Project/WindStockProj
-/Source/sources/xposed/
 /Source/GoProject/src/AppleIdAuthorizer
 /Source/GoProject/src/AppleIdRegister2
 /Source/GoProject/src/iTunesTool/
