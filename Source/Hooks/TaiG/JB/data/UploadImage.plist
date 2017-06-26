@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Command</key>
+	<string>ReceiveBytes</string>
+	<key>ImageSignature</key>
+	<data>
+	bVXC7fBYPGOtxUDb6L+FR7SdVJV86dyAMtGp+a11nisf6Z/LK66z21NIqzIstlx/w4tZ
+	y3VpfLwpIh3OHs0SDZCbdSQJIfw/LZb/CNMX4ZngM6f4qP9DCwyXvzxiEPw5814cI50b
+	99VovmE6r+9TEE87wYAe2ofvljp6vrV7g2k=
+	</data>
+	<key>ImageSize</key>
+	<integer>5192086</integer>
+	<key>ImageType</key>
+	<string>Developer</string>
+</dict>
+</plist>

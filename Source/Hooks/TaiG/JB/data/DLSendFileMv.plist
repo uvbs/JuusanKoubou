@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<string>DLSendFile</string>
+	<data>
+	</data>
+	<dict>
+		<key>AuthVersion</key>
+		<string>1.0</string>
+		<key>DLFileAttributesKey</key>
+		<dict>
+			<key>DeviceIdentifier</key>
+			<integer>2</integer>
+			<key>DeviceType</key>
+			<integer>2</integer>
+			<key>FileMode</key>
+			<integer>-32330</integer>
+			<key>FileSize</key>
+			<integer>0</integer>
+			<key>FileSystemFileNumber</key>
+			<integer>-2118778880</integer>
+			<key>Filename</key>
+			<string>Filename</string>
+			<key>GroupOwnerAccountID</key>
+			<integer>0</integer>
+			<key>LinkCount</key>
+			<integer>1</integer>
+			<key>OwnerAccountID</key>
+			<integer>0</integer>
+		</dict>
+		<key>DLFileDest</key>
+		<string>/var/mobile/Media/__pphelp_mx__/a/b/c/d/e/f/g/c</string>
+		<key>DLFileIsEncrypted</key>
+		<integer>0</integer>
+		<key>DLFileOffsetKey</key>
+		<integer>0</integer>
+		<key>DLFileSource</key>
+		<string>Filename</string>
+		<key>DLFileStatusKey</key>
+		<integer>2</integer>
+		<key>IsEncrypted</key>
+		<false/>
+		<key>Metadata</key>
+		<data>
+		YnBsaXN0MDDUAQMFBwIEBghWRG9tYWluW01lZGlhRG9tYWluWEdyZXlsaXN0
+		CFRQYXRoXxARTWVkaWEvUGhvdG9EYXRhL2NXVmVyc2lvblMzLjAIERgkLS4z
+		R08AAAAAAAABAQAAAAAAAAAJAAAAAAAAAAAAAAAAAAAAUw==
+		</data>
+		<key>StorageVersion</key>
+		<string>1.0</string>
+		<key>Version</key>
+		<string>3.0</string>
+	</dict>
+</array>
+</plist>

@@ -69,7 +69,6 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 
 /TempSync/ChromeUpdater/LATEST_CHANGE
 /TempSync/ChromeUpdater/CHECK
-/Source/Hooks/Crack
 /PyLibs/eric5*
 
 /Source/WG/
@@ -105,7 +104,6 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 /Source/Project/Gospel/
 /Source/Project/Yukikaze/
 /TempSync/SublimeText Packages/bz2/
-/Source/Hooks/TaiG/JB
 /Source/iOS
 /Source/Project/AppleIdRegister
 /Source/Project/Glorius2
