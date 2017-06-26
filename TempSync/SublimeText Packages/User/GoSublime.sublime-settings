@@ -1,0 +1,83 @@
+{
+    "snippets": [
+        {
+            "match": {"global": true, "pkgname": ".", "has_types": true},
+            "snippets": [
+                {
+                    "text": "func",
+                    "title": "(*${typename})",
+                    "value": "func (self ${2:*}${typename}) ${3:name}($4)$5 {\n\t$0\n}"
+                },
+                {}
+            ]
+        },
+        {
+            "snippets": [
+                {"text": "case", "title": "case", "value": "case"},
+                {"text": "select", "title": "select", "value": "select"},
+                {"text": "switch", "title": "switch", "value": "switch"},
+                {"text": "return", "title": "return", "value": "return"},
+                {"text": "break", "title": "break", "value": "break"},
+                {"text": "continue", "title": "continue", "value": "continue"},
+                {"text": "interface", "title": "interface", "value": "interface"},
+                {"text": "struct", "title": "struct", "value": "struct"},
+                {"text": "default", "title": "default", "value": "default"},
+                {"text": "defer", "title": "defer", "value": "defer"},
+                {"text": "fallthrough", "title": "fallthrough", "value": "fallthrough"},
+                {"text": "recover", "title": "recover", "value": "recover"},
+                {"text": "append", "title": "append", "value": "append($1)"},
+                {"text": "delete", "title": "delete", "value": "delete($1)"},
+                {"text": "mlc1", "title": "comment1", "value": "/***************************************************\n$1\n***************************************************/"},
+                {"text": "mlc2", "title": "comment2", "value": "/*++\n\n    $1\n\n--*/"},
+                {}
+            ]
+        }
+    ],
+
+    "default_snippets": [
+        {
+            "match": {"global": false, "pkgname": ""},
+            "snippets": [
+                {"text": "package", "title": "${default_pkgname}", "value": "package ${default_pkgname}\n\n$1\n"}
+            ]
+        },
+        {
+            "match": {"global": true, "pkgname": "^main$"},
+            "snippets": [
+                {"text": "main", "title": "main {...}", "value": "func main() {\n\t$0\n}\n"}
+            ]
+        },
+        {
+            "match": {"global": true, "pkgname": "."},
+            "snippets": [
+                {"text": "import", "title": "import (...)", "value": "import (\n\t\"$1\"\n)"},
+                {"text": "func", "title": "{...}", "value": "func ${1:name}($2)$3 {\n\t$0\n}"},
+                {"text": "var", "title": "var (...)", "value": "var (\n\t$1\n)"},
+                {"text": "const", "title": "const (...)", "value": "const (\n\t$1\n)"},
+                {"text": "init", "title": "init()", "value": "func init() {\n\t$1\n}"},
+                {}
+            ]
+        },
+        // {
+        //     "match": {"global": false, "local": true, "pkgname": "."},
+        //     "snippets": [
+        //         {"text": "func", "title": "{...}()", "value": "func($1) {\n\t$0\n}($2)"},
+        //         {"text": "var", "title": "var [name] [type]", "value": "var ${1:name} ${2:type}"}
+        //     ]
+        // },
+        {}
+    ],
+
+    "env": {
+        "GOPATH": "D:/Dev/go/pkgs;D:/Dev/Source/GoProject;D:/Dev/Source/Project/Private;D:/Dev/Source/Falcom",
+        "GOROOT": "D:/Dev/go",
+        "PATH": "$GOROOT/bin;$PATH"
+    },
+    "fmt_tab_indent": false,
+    "fmt_tab_width": 4,
+    "gslint_enabled": false,
+    "lint_enabled": false,
+    "fmt_enabled": false,
+    "gscomplete_enabled": true,
+    "autoinst": true
+}

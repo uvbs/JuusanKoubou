@@ -1,0 +1,20 @@
+<!-- See http://www.sublimetext.com/docs/snippets for more information -->
+<snippet>
+    <tabTrigger>qtmain</tabTrigger>
+    <scope>source.python</scope>
+    <description>qtmain</description>
+    <content><![CDATA[
+from mlqt import *
+
+${1:$SELECTION}
+
+def main():
+    app = QApplication(sys.argv)
+
+    return app.exec_()
+
+if __name__ == '__main__':
+    Try(main)
+
+]]></content>
+</snippet>

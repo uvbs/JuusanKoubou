@@ -1,0 +1,28 @@
+[
+    { "keys": [""], "command": "next_bookmark" },
+    { "keys": ["f2"], "command": "next_view" },
+    { "keys": ["f1"], "command": "prev_view" },
+    { "keys": ["f4"], "command": "close" },
+    { "keys": ["alt+z"], "command": "reopen_last_file" },
+    { "keys": ["alt+="], "command": "jump_forward" },
+    { "keys": ["alt+o"], "command": "switch_file", "args": {"extensions": ["xml.lua", "cpp", "cxx", "cc", "c", "hpp", "hxx", "h", "ipp", "inl", "m", "mm"]} },
+
+    { "keys": ["shift+space"], "command": "" },
+    { "keys": ["shift+space"], "command": "", "":
+        [
+            { "key": "last_command", "operator": "equal", "operand": "insert_best_completion" },
+            { "key": "auto_complete_visible", "operator": "equal", "operand": false },
+            { "key": "setting.tab_completion", "operator": "equal", "operand": true }
+        ]
+    },
+
+    {"keys": ["ctrl+u"], "command": "scroll_lines", "args": {"amount": 15.0}, "context": [{ "key": "setting.command_mode" }]},
+    {"keys": ["ctrl+d"], "command": "scroll_lines", "args": {"amount": -15.0}, "context": [{"key": "setting.command_mode"}]},
+    {"keys": ["ctrl+e"], "command": "scroll_lines", "args": {"amount": -1.0}, "context": [{ "key": "setting.command_mode" }]},
+    {"keys": ["ctrl+y"], "command": "scroll_lines", "args": {"amount": 1.0}, "context": [{"key": "setting.command_mode"}]},
+
+    { "keys": ["ctrl+shift+a"], "command": "alignment" },
+
+    { "keys": ["ctrl+alt+r"], "command": "anaconda_rename" },
+    { "keys": ["alt+g"], "command": "goto_definition"}
+]

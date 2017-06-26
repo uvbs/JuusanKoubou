@@ -1,0 +1,34 @@
+// Place your key bindings in this file to overwrite the defaults
+[
+{ "key": "ctrl+f1",               "command": "workbench.action.showCommands" },
+{ "key": "f1",                    "command": "workbench.action.previousEditor" },
+{ "key": "f2",                    "command": "workbench.action.nextEditor" },
+{ "key": "f4",                    "command": "workbench.action.closeActiveEditor" },
+{ "key": "ctrl+shift+r",          "command": "editor.action.rename",
+                                    "when": "editorTextFocus"
+                                },
+                                {
+                                    "key": "ctrl+k ctrl+l",
+                                    "command": "editor.action.transformToLowercase"
+                                },
+                                {
+                                    "key": "ctrl+k ctrl+u",
+                                    "command": "editor.action.transformToUppercase"
+                                },
+                                {
+                                    "key": "alt+o",
+                                    "command": "-togglehs.toggleHS"
+                                },
+                                {
+                                    "key": "alt+o",
+                                    "command": "togglehs.toggleHS"
+                                },
+                                {
+                                    "key": "ctrl+r",
+                                    "command": "C_Cpp.Navigate"
+                                },
+                                {
+                                    "key": "ctrl+j",
+                                    "command": "editor.action.joinLines"
+                                }
+                            ]

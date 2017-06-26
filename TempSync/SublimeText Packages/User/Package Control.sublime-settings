@@ -1,0 +1,50 @@
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"Alignment",
+		"Anaconda",
+		"ARM Assembly",
+		"AutoHotkey",
+		"Block Cursor Everywhere",
+		"CoffeeAngular Syntax",
+		"GoSublime",
+		"MagicPython",
+		"One Dark Color Scheme",
+		"One Dark Material - Theme",
+		"Origami",
+		"Package Control",
+		"PowerShell",
+		"Protocol Buffer Syntax",
+		"QML",
+		"REG",
+		"RustAutoComplete",
+		"SideBarEnhancements",
+		"Sublime Text 3 Snippets",
+		"sublime-jsdocs",
+		"SublimeFileDiffs",
+		"Theme - Brogrammer",
+		"Theme - Flatland",
+		"TOML",
+		"Transparency",
+		"VBScript",
+		"Vintageous",
+		"Vue Syntax Highlight"
+	],
+	"repositories":
+	[
+		"https://github.com/titoBouzout/SideBarEnhancements/tree/st3",
+		"https://github.com/wbond/sublime_alignment",
+		"https://github.com/colinta/SublimeFileDiffs",
+		"https://github.com/spadgos/sublime-jsdocs",
+		"https://github.com/SublimeText/PowerShell",
+		"https://github.com/aviaryan/AutoHotkey",
+		"https://github.com/jrk/protobuf.sublime-package",
+		"https://github.com/wuub/SublimeREPL",
+		"https://github.com/Colorsublime/Colorsublime-Themes",
+		"https://github.com/rust-lang/sublime-rust"
+	]
+}

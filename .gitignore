@@ -153,3 +153,4 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 /Source/Project/iTunesHelper
 *.VC.db
 /TempSync/VSCodeUserData/workspaceStorage/
+/TempSync/AtomConfig/packages
