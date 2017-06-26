@@ -64,7 +64,7 @@ VOID CDECL USBMuxdCallback(PUSBMUXD_EVENT Event, PVOID UserData)
     if (Event->Event == UE_DEVICE_ADD)
     {
         LoadConfig();
-        //Ps::CreateThread(Thread);
+        Ps::CreateThread(Thread);
     }
 }
 
@@ -81,7 +81,16 @@ int CDECL usbmuxd_subscribe(USBMUXD_EVENT_CALLBACK Callback, PVOID UserData)
 
 BOOL NTAPI ImpactorGetOpenFileNameW(LPOPENFILENAMEW name)
 {
-    CopyMemory(name->lpstrFile, gConfig->IPA.GetBuffer(), gConfig->IPA.GetSize() + 2);
+    PWSTR filename;
+
+    RtlGetFullPathName_U(gConfig->IPA, name->nMaxFile * sizeof(name->lpstrFile[0]), name->lpstrFile, &filename);
+
+    StrCopyW(name->lpstrFileTitle, filename);
+
+    name->nFileOffset = filename - name->lpstrFile;
+    name->nFileExtension = findextw(filename) - name->lpstrFile;
+    name->nFileExtension += name->lpstrFile[name->nFileExtension] == '.';
+
     return TRUE;
 }
 
@@ -105,7 +114,7 @@ BOOL Initialize(PVOID BaseAddress)
 
     PATCH_MEMORY_DATA p[] =
     {
-        //MemoryPatchVa((ULONG64)ImpactorGetOpenFileNameW, sizeof(PVOID), IATLookupRoutineByHash(ImpactorExe, COMDLG32_GetOpenFileNameW)),
+        MemoryPatchVa((ULONG64)ImpactorGetOpenFileNameW, sizeof(PVOID), IATLookupRoutineByHash(ImpactorExe, COMDLG32_GetOpenFileNameW)),
         FunctionJumpVa(Ldr::GetRoutineAddress(ImpactorDll, "usbmuxd_subscribe"), usbmuxd_subscribe, &stub_usbmuxd_subscribe),
     };
 

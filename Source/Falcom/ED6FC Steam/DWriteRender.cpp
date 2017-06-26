@@ -168,6 +168,7 @@ NTSTATUS DWriteRender::Initialize(PCWSTR FontPath, PCWSTR FaceName, ULONG_PTR Fo
         SafeReleaseT(renderingParams);
     }
 
+    SafeReleaseT(fontFile);
     SafeReleaseT(factory);
     SafeReleaseT(dwrite);
     SafeReleaseT(gdiInterop);

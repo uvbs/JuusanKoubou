@@ -73,7 +73,6 @@
       <AdditionalDependencies>mylib.lib;undoc_ntdll.lib;ntdll.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions> /ltcg</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
-      <ModuleDefinitionFile>.\ed6fc.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
