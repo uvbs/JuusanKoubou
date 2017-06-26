@@ -1,0 +1,14 @@
+EXPORTS
+    FmsInitializeEnumerator
+    FmsFreeEnumerator
+    FmsSetFilter
+    FmsAddFilter
+    FmsGetFilteredPropertyList
+    FmsGetFilteredFontList
+    FmsGetGDILogFont
+    FmsGetGdiLogicalFont
+    FmsGetFontProperty
+    FmsGetBestMatchInFamily
+	FmsMapGdiLogicalFont
+	FmsResetEnumerator
+	FmsSetDefaultFilter
