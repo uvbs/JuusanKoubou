@@ -2,11 +2,20 @@ from ml import *
 import Assembler
 
 def main():
-    print(Assembler.Instruction.Instruction)
-    print(Assembler.InstructionTable.InstructionTable)
-    print(Assembler.Instruction.InstructionDescriptor)
+    print(Assembler.Instruction)
+    print(Assembler.InstructionTable)
+    print(Assembler.InstructionDescriptor)
 
-    f = Assembler.Instruction.Flags.StartBlock | Assembler.Instruction.Flags.EndBlock
+    f = Assembler.Flags.StartBlock | Assembler.Flags.EndBlock
+    print(f)
+
+    inst = Assembler.Instruction()
+    blk = Assembler.CodeBlock(None)
+    tbl = Assembler.InstructionTable(None)
+
+    blk.instructions[0]
+    inst.branches[0]
+    tbl.decriptors[0]
 
     print(f.isStartBlock)
     print(f.isEndBlock)

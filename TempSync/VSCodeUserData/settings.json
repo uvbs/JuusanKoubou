@@ -43,6 +43,7 @@
     "python.unitTest.nosetestsEnabled": false,
     "python.unitTest.nosetestPath": "nosetests",
     "python.unitTest.unittestEnabled": false,
+
     "window.zoomLevel": 0,
     "files.associations": {
         "*.xm": "objective-cpp"
