@@ -47,5 +47,6 @@
     "window.zoomLevel": 0,
     "files.associations": {
         "*.xm": "objective-cpp"
-    }
+    },
+    "editor.multiCursorModifier": "alt"
 }

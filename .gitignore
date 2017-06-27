@@ -126,3 +126,4 @@ Source/LocaleEmulator/LocaleEmulator/LoaderDll.dll
 *.VC.db
 /TempSync/VSCodeUserData/workspaceStorage/
 /TempSync/AtomConfig/packages
+/Source/Falcom/Decompiler2/.vscode/.ropeproject

@@ -8,11 +8,11 @@ __all__ = (
 
 class CodeBlock:
     def __init__(self, instructions: 'List[instruction.Instruction]'):
-        self.instructions = instructions or []      # type: List[instruction.Instruction]
-        self.labels = None                          # type: List[instruction.Label]
-        self.offset = None                          # type: int
+        self.instructions   = instructions  # type: List[instruction.Instruction]
+        self.labels         = None          # type: List[instruction.Label]
+        self.offset         = None          # type: int
 
 class Function:
     def __init__(self, name: str, blocks: List[CodeBlock]):
-        self.blocks = blocks or []                  # type: List[CodeBlock]
-        self.name = None
+        self.blocks = blocks                # type: List[CodeBlock]
+        self.name   = None                  # type: str

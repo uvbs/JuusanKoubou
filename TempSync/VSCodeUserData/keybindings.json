@@ -30,5 +30,9 @@
                                 {
                                     "key": "ctrl+j",
                                     "command": "editor.action.joinLines"
+                                },
+                                {
+                                    "key": "ctrl+q",
+                                    "command": "workbench.action.toggleMultiCursorModifier"
                                 }
                             ]
