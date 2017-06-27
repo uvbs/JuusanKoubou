@@ -16,3 +16,12 @@ class InstructionTable:
 
     def readInstruction(self, fs: fileio.FileStream) -> 'instruction.Instruction':
         raise NotImplementedError
+
+    def readOpCode(self, fs: fileio.FileStream) -> int:
+        raise NotImplementedError
+
+    def writeInstruction(self, fs: fileio.FileStream, inst: 'instruction.Instruction'):
+        raise NotImplementedError
+
+    def writeOpCode(self, fs: fileio.FileStream, inst: 'instruction.Instruction'):
+        raise NotImplementedError

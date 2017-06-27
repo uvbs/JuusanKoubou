@@ -6,6 +6,13 @@ def main():
     print(Assembler.InstructionTable)
     print(Assembler.InstructionDescriptor)
 
+    print(Assembler.Operand.Format.UInt64.size)
+    print(Assembler.Operand.Format.SInt16)
+
+    opr = Assembler.Operand()
+
+    print(opr.format.lower)
+
     f = Assembler.Flags.StartBlock | Assembler.Flags.EndBlock
     print(f)
 
