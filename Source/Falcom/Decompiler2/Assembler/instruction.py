@@ -12,8 +12,8 @@ __all__ = (
 
 class Label:
     def __init__(self, label: str, offset: int):
-        self.label = label          # label name
-        self.offset = offset        # label offset in instruction
+        self.label = label          # type: str
+        self.offset = offset        # type: int
 
 class Operand:
     def __init__(self):

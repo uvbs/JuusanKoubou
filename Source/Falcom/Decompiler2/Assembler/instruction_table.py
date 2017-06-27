@@ -1,4 +1,5 @@
 from Common import *
+from . import instruction
 
 __all__ = (
     'InstructionDescriptor',
@@ -11,7 +12,7 @@ class InstructionDescriptor:
 
 class InstructionTable:
     def __init__(self, decriptors: List[InstructionDescriptor]):
-        self.decriptors = []        # type: List[InstructionDescriptor]
+        self.decriptors = decriptors or []        # type: List[InstructionDescriptor]
 
-    def readInstruction(self, fs: fileio.FileStream) -> InstructionDescriptor:
+    def readInstruction(self, fs: fileio.FileStream) -> 'instruction.Instruction':
         raise NotImplementedError
