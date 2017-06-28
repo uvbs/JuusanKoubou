@@ -1,10 +1,13 @@
 from Common import *
 from Assembler import Flags, Instruction, InstructionTable, InstructionDescriptor, OperandDescriptor
 from Assembler import *
+from .types import *
 
 __all__ = (
     'ScenaOpTable',
 )
+
+NoOperand = InstructionDescriptor.NoOperand
 
 class ED6FCInstructionTable(InstructionTable):
     def readOpCode(self, fs: fileio.FileStream) -> int:
@@ -13,15 +16,14 @@ class ED6FCInstructionTable(InstructionTable):
     def writeOpCode(self, fs: fileio.FileStream, inst: 'Instruction'):
         fs.WriteByte(inst.opcode)
 
-for i in OperandDescriptor:
+for i in ED6FCOperandFormat:
     globals()[i.name] = i
 
-def inst(opcode: int, mnemonic: str, operands: List[OperandDescriptor] = None, flags: Flags = Flags.Empty, handler: InstructionHandler = None) -> InstructionDescriptor:
-    if operands == OperandDescriptor.Empty:
-        operands = None
-
-    if operands and not isinstance(operands, (list, tuple)):
-        operands = (operands,)
+def inst(opcode: int, mnemonic: str, operandfmts: str = None, flags: Flags = Flags.Empty, handler: InstructionHandler = None) -> InstructionDescriptor:
+    if operandfmts is NoOperand:
+        operands = NoOperand
+    else:
+        operands = ED6FCOperandDescriptor.fromFormatString(operandfmts)
 
     return InstructionDescriptor(opcode = opcode, mnemonic = mnemonic, operands = operands, flags = flags, handler = handler)
 
@@ -31,11 +33,13 @@ def Handler_Jc():
 def Handler_Switch():
     pass
 
+ibp()
+
 ScenaOpTable = ED6FCInstructionTable([
     inst(0x00, 'ExitThread'),
-    inst(0x01, 'Return',        Empty,          Flags.EndBlock),
-    inst(0x02,  'Jc',           Empty,          Flags.StartBlock,    Handler_Jc),
-    inst(0x03,  'Jump',         Offset,         Flags.Jump),
-    inst(0x04,  'Switch',       Empty,          Flags.EndBlock,      Handler_Switch),
+    inst(0x01, 'Return',        NoOperand,          Flags.EndBlock),
+    inst(0x02,  'Jc',           NoOperand,          Flags.StartBlock,    Handler_Jc),
+    inst(0x03,  'Jump',         Offset,             Flags.Jump),
+    inst(0x04,  'Switch',       NoOperand,          Flags.EndBlock,      Handler_Switch),
     inst(0x05,  'Call',         (UInt8, UInt16)),          # Call(scp index, func index)
 ])

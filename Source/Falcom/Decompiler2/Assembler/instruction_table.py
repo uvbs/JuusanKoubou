@@ -10,7 +10,7 @@ __all__ = (
     'InstructionTable',
 )
 
-class OperandDescriptor(IntEnum):
+class OperandFormat(IntEnum):
     Empty,      \
     SInt8,      \
     SInt16,     \
@@ -30,49 +30,65 @@ class OperandDescriptor(IntEnum):
     UHex64,     \
     Float32,    \
     Float64,    \
-    Offset,     \
     MBCS,       \
     Bytes,      \
-    UserDefined = range(23)
+    UserDefined = range(22)
 
-    def __init__(self, *args):
-        super(IntEnum, self).__init__()
+    _sizeTable = {
+        SInt8      : 1,
+        SInt16     : 2,
+        SInt32     : 4,
+        SInt64     : 8,
 
-        self.lower      = False     # type: bool
-        self.encoding   = 'mbcs'    # type: str
+        UInt8      : 1,
+        UInt16     : 2,
+        UInt32     : 4,
+        UInt64     : 8,
+
+        SHex8      : 1,
+        SHex16     : 2,
+        SHex32     : 4,
+        SHex64     : 8,
+
+        UHex8      : 1,
+        UHex16     : 2,
+        UHex32     : 4,
+        UHex64     : 8,
+
+        Float32    : 4,
+        Float64    : 8,
+
+        MBCS       : None,
+        Bytes      : None,
+    }
 
     def __repr__(self):
         return super().__repr__().rsplit('.', 1)[-1].split(':', 1)[0]
 
     @property
     def size(self):
-        return {
-            self.SInt8      : 1,
-            self.SInt16     : 2,
-            self.SInt32     : 4,
-            self.SInt64     : 8,
+        return self.sizeTable.get(self)
 
-            self.UInt8      : 1,
-            self.UInt16     : 2,
-            self.UInt32     : 4,
-            self.UInt64     : 8,
+class FormatOperandHandlerInfo:
+    def __init__(self):
+        pass
 
-            self.SHex8      : 1,
-            self.SHex16     : 2,
-            self.SHex32     : 4,
-            self.SHex64     : 8,
+FormatOperandHandler = Callable[[FormatOperandHandlerInfo], Any]
 
-            self.UHex8      : 1,
-            self.UHex16     : 2,
-            self.UHex32     : 4,
-            self.UHex64     : 8,
+class OperandDescriptor:
+    formatTable = {
+        'c' : OperandDescriptor(OperandFormat.SInt8, hex = False),
+    }
 
-            self.Float32    : 4,
-            self.Float64    : 8,
+    @classmethod
+    def fromFormatString(cls, fmtstr: str, formatTable: Dict[str, OperandDescriptor] = OperandDescriptor.formatTable):
+        return [formatTable[f] for f in fmtstr]
 
-            self.MBCS       : None,
-            self.Bytes      : None,
-        }[self]
+    def __init__(self, format: OperandFormat, hex: bool = False, encoding: str = 'mbcs', formatHandler: FormatOperandHandler = None):
+        self.format     = format                    # type: OperandFormat
+        self.hex        = hex                       # type: bool
+        self.encoding   = encoding                  # type: str
+        self.handler    = formatHandler             # type: FormatOperandHandler
 
 class InstructionHandlerInfo:
     def __init__(self):
@@ -81,7 +97,9 @@ class InstructionHandlerInfo:
 InstructionHandler = Callable[[InstructionHandlerInfo], Any]
 
 class InstructionDescriptor:
-    def __init__(self, opcode: int, mnemonic: str, operands: List[OperandDescriptor], flags: 'instruction.Flags' = 0, handler: InstructionHandler = None):
+    NoOperand = None
+
+    def __init__(self, opcode: int, mnemonic: str, operands: List[OperandDescriptor] = NoOperand, flags: 'instruction.Flags' = 0, handler: InstructionHandler = None):
         self.opcode     = opcode                    # type: int
         self.mnemonic   = mnemonic                  # type: str
         self.operands   = operands                  # type: List[OperandDescriptor]
@@ -119,4 +137,4 @@ class InstructionTable:
         raise NotImplementedError
 
     def __str__(self):
-        return '\r\n'.join(['%s' % x for x in self.descriptors])
+        return '\n'.join(['%s' % x for x in self.descriptors])
