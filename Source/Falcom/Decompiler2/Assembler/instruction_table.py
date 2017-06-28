@@ -3,6 +3,7 @@ from enum import IntEnum
 from . import instruction
 
 __all__ = (
+    'OperandType',
     'OperandFormat',
     'OperandDescriptor',
     'InstructionDescriptor',
@@ -11,7 +12,7 @@ __all__ = (
     'InstructionTable',
 )
 
-class OperandFormat(IntEnum):
+class OperandType(IntEnum):
     Empty,      \
     SInt8,      \
     SInt16,     \
@@ -36,44 +37,55 @@ class OperandFormat(IntEnum):
     UserDefined = range(22)
 
     def __repr__(self):
-        return super().__repr__().rsplit('.', 1)[-1].split(':', 1)[0]
+        return self.name
+
+class OperandFormat:
+    sizeTable = {
+        OperandType.SInt8   : 1,
+        OperandType.SInt16  : 2,
+        OperandType.SInt32  : 4,
+        OperandType.SInt64  : 8,
+
+        OperandType.UInt8   : 1,
+        OperandType.UInt16  : 2,
+        OperandType.UInt32  : 4,
+        OperandType.UInt64  : 8,
+
+        OperandType.SHex8   : 1,
+        OperandType.SHex16  : 2,
+        OperandType.SHex32  : 4,
+        OperandType.SHex64  : 8,
+
+        OperandType.UHex8   : 1,
+        OperandType.UHex16  : 2,
+        OperandType.UHex32  : 4,
+        OperandType.UHex64  : 8,
+
+        OperandType.Float32 : 4,
+        OperandType.Float64 : 8,
+
+        OperandType.MBCS    : None,
+        OperandType.Bytes   : None,
+    }
+
+    def __init__(self, oprType: OperandType, hex: bool = False, encoding: str = 'mbcs'):
+        self.type       = oprType                   # type: OperandType
+        self.hex        = hex                       # type: bool
+        self.encoding   = encoding                  # type: str
+
+    def __str__(self):
+        return repr(self.type)
+
+    def __repr__(self):
+        return str(self)
 
     @property
     def size(self):
         return self.sizeTable.get(self)
 
-OperandFormat.sizeTable = {
-    OperandFormat.SInt8     : 1,
-    OperandFormat.SInt16    : 2,
-    OperandFormat.SInt32    : 4,
-    OperandFormat.SInt64    : 8,
-
-    OperandFormat.UInt8     : 1,
-    OperandFormat.UInt16    : 2,
-    OperandFormat.UInt32    : 4,
-    OperandFormat.UInt64    : 8,
-
-    OperandFormat.SHex8     : 1,
-    OperandFormat.SHex16    : 2,
-    OperandFormat.SHex32    : 4,
-    OperandFormat.SHex64    : 8,
-
-    OperandFormat.UHex8     : 1,
-    OperandFormat.UHex16    : 2,
-    OperandFormat.UHex32    : 4,
-    OperandFormat.UHex64    : 8,
-
-    OperandFormat.Float32   : 4,
-    OperandFormat.Float64   : 8,
-
-    OperandFormat.MBCS      : None,
-    OperandFormat.Bytes     : None,
-}
-
-
 class FormatOperandHandlerInfo:
-    def __init__(self):
-        pass
+    def __init__(self, format: OperandFormat):
+        self.format = format                        # type: OperandFormat
 
 FormatOperandHandler = Callable[[FormatOperandHandlerInfo], Any]
 
@@ -81,16 +93,31 @@ class OperandDescriptor:
     @classmethod
     def fromFormatString(cls, fmtstr: str, formatTable = None):
         formatTable = formatTable if formatTable else cls.formatTable
-        return [formatTable[f] for f in fmtstr]
+        return tuple(formatTable[f] for f in fmtstr)
 
-    def __init__(self, format: OperandFormat, hex: bool = False, encoding: str = 'mbcs', formatHandler: FormatOperandHandler = None):
+    def __init__(self, format: OperandFormat, formatHandler: FormatOperandHandler = None):
         self.format     = format                    # type: OperandFormat
-        self.hex        = hex                       # type: bool
-        self.encoding   = encoding                  # type: str
         self.handler    = formatHandler             # type: FormatOperandHandler
 
+    def __str__(self):
+        return repr(self.format)
+
+    def __repr__(self):
+        return str(self)
+
+def oprdesc(*args, **kwargs):
+    return OperandDescriptor(OperandFormat(*args, **kwargs))
+
 OperandDescriptor.formatTable = {
-    'c' : OperandDescriptor(OperandFormat.SInt8, hex = False),
+    'c' : oprdesc(OperandType.SInt8, hex = False),
+    'C' : oprdesc(OperandType.UInt8, hex = False),
+    'b' : oprdesc(OperandType.SInt8, hex = True),
+    'B' : oprdesc(OperandType.UInt8, hex = True),
+
+    'h' : oprdesc(OperandType.SInt16, hex = False),
+    'H' : oprdesc(OperandType.UInt16, hex = False),
+    'w' : oprdesc(OperandType.SInt16, hex = True),
+    'W' : oprdesc(OperandType.UInt16, hex = True),
 }
 
 

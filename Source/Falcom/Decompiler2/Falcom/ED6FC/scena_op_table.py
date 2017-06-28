@@ -16,7 +16,7 @@ class ED6FCInstructionTable(InstructionTable):
     def writeOpCode(self, fs: fileio.FileStream, inst: 'Instruction'):
         fs.WriteByte(inst.opcode)
 
-for i in ED6FCOperandFormat:
+for i in ED6FCOperandType:
     globals()[i.name] = i
 
 def inst(opcode: int, mnemonic: str, operandfmts: str = None, flags: Flags = Flags.Empty, handler: InstructionHandler = None) -> InstructionDescriptor:
@@ -33,13 +33,11 @@ def Handler_Jc():
 def Handler_Switch():
     pass
 
-ibp()
-
 ScenaOpTable = ED6FCInstructionTable([
     inst(0x00, 'ExitThread'),
     inst(0x01, 'Return',        NoOperand,          Flags.EndBlock),
     inst(0x02,  'Jc',           NoOperand,          Flags.StartBlock,    Handler_Jc),
-    inst(0x03,  'Jump',         Offset,             Flags.Jump),
+    inst(0x03,  'Jump',         'o',                Flags.Jump),
     inst(0x04,  'Switch',       NoOperand,          Flags.EndBlock,      Handler_Switch),
-    inst(0x05,  'Call',         (UInt8, UInt16)),          # Call(scp index, func index)
+    inst(0x05,  'Call',         'CH'),          # Call(scp index, func index)
 ])

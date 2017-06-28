@@ -1,18 +1,30 @@
 from Common import *
-from Assembler import OperandFormat, OperandDescriptor
+from enum import IntEnum
+from Assembler import OperandType, OperandFormat, OperandDescriptor
 
-UserDefined = OperandFormat.UserDefined
+UserDefined = OperandType.UserDefined
+
+class ED6FCOperandType(IntEnum):
+    Offset = UserDefined + 1
+
+    __str__     = OperandType.__str__
+    __repr__    = OperandType.__repr__
 
 class ED6FCOperandFormat(OperandFormat):
-    Offset,     \
-    UserDefined = range(UserDefined + 1, UserDefined + 2)
+    sizeTable = {
+        ED6FCOperandType.Offset : 2,
 
-    # _sizeTable = {
-    #     Offset  : 2,
-    # }.update(OperandFormat._sizeTable)
+        **OperandFormat.sizeTable,
+    }
 
 class ED6FCOperandDescriptor(OperandDescriptor):
-    formatTable = {
-        'o' : OperandDescriptor(ED6FCOperandFormat.SInt8, hex = False),
+    pass
 
-    }.update(OperandDescriptor.formatTable)
+def oprdesc(*args, **kwargs):
+    return ED6FCOperandDescriptor(ED6FCOperandFormat(*args, **kwargs))
+
+ED6FCOperandDescriptor.formatTable = {
+    'o' : oprdesc(ED6FCOperandType.Offset),
+
+    **OperandDescriptor.formatTable,
+}
