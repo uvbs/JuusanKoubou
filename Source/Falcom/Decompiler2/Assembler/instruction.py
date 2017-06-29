@@ -52,6 +52,12 @@ class Flags(IntFlag):
     def isArgNewLine(self):
         return bool(self.value & self.FormatArgNewLine)
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
 class Instruction:
     def __init__(self):
         self.opcode     = None      # type: int

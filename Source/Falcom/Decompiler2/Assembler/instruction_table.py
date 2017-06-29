@@ -36,6 +36,9 @@ class OperandType(IntEnum):
     Bytes,      \
     UserDefined = range(22)
 
+    def __str__(self):
+        return self.name
+
     def __repr__(self):
         return self.name
 
@@ -81,7 +84,7 @@ class OperandFormat:
 
     @property
     def size(self):
-        return self.sizeTable.get(self)
+        return self.sizeTable.get(self.type)
 
 class FormatOperandHandlerInfo:
     def __init__(self, format: OperandFormat):
@@ -91,7 +94,7 @@ FormatOperandHandler = Callable[[FormatOperandHandlerInfo], Any]
 
 class OperandDescriptor:
     @classmethod
-    def fromFormatString(cls, fmtstr: str, formatTable = None):
+    def fromFormatString(cls, fmtstr: str, formatTable = None) -> 'List[OperandDescriptor]':
         formatTable = formatTable if formatTable else cls.formatTable
         return tuple(formatTable[f] for f in fmtstr)
 
@@ -118,6 +121,14 @@ OperandDescriptor.formatTable = {
     'H' : oprdesc(OperandType.UInt16, hex = False),
     'w' : oprdesc(OperandType.SInt16, hex = True),
     'W' : oprdesc(OperandType.UInt16, hex = True),
+
+    'i' : oprdesc(OperandType.SInt32, hex = False),
+    'I' : oprdesc(OperandType.UInt32, hex = False),
+    'l' : oprdesc(OperandType.SInt32, hex = True),
+    'L' : oprdesc(OperandType.UInt32, hex = True),
+
+    'q' : oprdesc(OperandType.SInt64, hex = True),
+    'Q' : oprdesc(OperandType.UInt64, hex = True),
 }
 
 

@@ -28,3 +28,4 @@ ED6FCOperandDescriptor.formatTable = {
 
     **OperandDescriptor.formatTable,
 }
+
