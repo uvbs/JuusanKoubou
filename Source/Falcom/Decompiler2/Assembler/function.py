@@ -15,4 +15,5 @@ class CodeBlock:
 class Function:
     def __init__(self, name: str, blocks: List[CodeBlock]):
         self.blocks = blocks                # type: List[CodeBlock]
+        self.offset = None                  # type: int
         self.name   = None                  # type: str
