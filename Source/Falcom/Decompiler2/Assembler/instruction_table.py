@@ -97,7 +97,7 @@ FormatOperandHandler = Callable[[FormatOperandHandlerInfo], Any]
 
 class OperandDescriptor:
     @classmethod
-    def fromFormatString(cls, fmtstr: str, formatTable = None) -> 'List[OperandDescriptor]':
+    def fromFormatString(cls, fmtstr: str, formatTable = None) -> 'Tuple[OperandDescriptor]':
         formatTable = formatTable if formatTable else cls.formatTable
         return tuple(formatTable[f] for f in fmtstr)
 
@@ -105,7 +105,7 @@ class OperandDescriptor:
         self.format     = format                    # type: OperandFormat
         self.handler    = formatHandler             # type: FormatOperandHandler
 
-    def read(self, fs: fileio.FileStream):
+    def readValue(self, fs: fileio.FileStream) -> Any:
         return {
             OperandType.SInt8   : lambda : fs.ReadChar(),
             OperandType.UInt8   : lambda : fs.ReadByte(),
@@ -120,7 +120,7 @@ class OperandDescriptor:
             OperandType.UInt64  : lambda : fs.ReadULong64(),
 
             OperandType.MBCS    : lambda : fs.ReadMultiByte(self.format.encoding),
-        }[self.format]()
+        }[self.format.type]()
 
     def __str__(self):
         return repr(self.format)
@@ -149,6 +149,8 @@ OperandDescriptor.formatTable = {
 
     'q' : oprdesc(OperandType.SInt64, hex = True),
     'Q' : oprdesc(OperandType.UInt64, hex = True),
+
+    'S' : oprdesc(OperandType.MBCS, encoding = DefaultEncoding)
 }
 
 
@@ -191,7 +193,7 @@ class InstructionTable:
         for desc in self.descriptors:
             self.lookup[desc.opcode] = desc
 
-    def fromOpCode(self, opcode: int) -> InstructionDescriptor:
+    def getDescriptor(self, opcode: int) -> InstructionDescriptor:
         return self.lookup[opcode]
 
     def readOpCode(self, fs: fileio.FileStream) -> int:
@@ -211,7 +213,7 @@ class InstructionTable:
 
         operand.size = desc.format.size
         operand.descriptor = desc
-        operand.value = desc.read(fs)
+        operand.value = desc.readValue(fs)
 
         return operand
 

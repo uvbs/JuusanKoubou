@@ -1,6 +1,6 @@
-from Common import *
-from enum import IntEnum
-from Assembler import OperandType, OperandFormat, OperandDescriptor
+from Common     import *
+from Assembler  import *
+from enum       import IntEnum
 
 UserDefined = OperandType.UserDefined
 

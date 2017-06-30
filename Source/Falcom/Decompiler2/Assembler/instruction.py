@@ -1,7 +1,9 @@
 from Common import *
 from enum import IntFlag
-from . import function
 from . import instruction_table
+
+if TYPE_CHECKING:
+    from . import function
 
 __all__ = (
     'Label',
@@ -14,14 +16,17 @@ OperandDescriptor = instruction_table.OperandDescriptor
 
 class Label:
     def __init__(self, label: str, offset: int):
-        self.label = label                          # type: str
+        self.label  = label                         # type: str
         self.offset = offset                        # type: int
 
 class Operand:
     def __init__(self):
         self.value      = None                      # type: Any
         self.size       = None                      # type: int
-        self.descriptor = OperandDescriptor.Empty   # type: OperandDescriptor
+        self.descriptor = None                      # type: OperandDescriptor
+
+    def __str__(self):
+        return '%s' % self.value
 
 class Flags(IntFlag):
     Empty               = 0
@@ -70,3 +75,6 @@ class Instruction:
         self.descriptor = None                      # type: instruction_table.InstructionDescriptor
         self.label      = None                      # type: Label
         self.flags      = None                      # type: Flags
+
+    def __str__(self):
+        return '%s(%s)' % (self.descriptor.mnemonic, ', '.join(['%s' % opr for opr in self.operands]))

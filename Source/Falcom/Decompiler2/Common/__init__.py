@@ -1,2 +1,5 @@
 from ml import *
-from typing import List, Callable, Dict, Any, TYPE_CHECKING
+from typing import List, Callable, Dict, Any, Tuple, TYPE_CHECKING
+
+
+DefaultEncoding = 'GBK'
