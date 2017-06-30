@@ -1,5 +1,5 @@
 from Common import *
-from Assembler import Flags, Instruction, InstructionTable, InstructionDescriptor, OperandDescriptor
+from Assembler import Flags, Instruction, InstructionTable, InstructionDescriptor, OperandDescriptor, Operand
 from Assembler import *
 from .types import *
 
@@ -15,6 +15,16 @@ class ED6FCInstructionTable(InstructionTable):
 
     def writeOpCode(self, fs: fileio.FileStream, inst: 'Instruction'):
         fs.WriteByte(inst.opcode)
+
+    def readOperand(self, fs: fileio.FileStream, desc: InstructionDescriptor) -> 'instruction.Operand':
+        operand = Operand()
+
+        desc.read(fs)
+
+        return operand
+
+    def writeOperand(self, fs: fileio.FileStream, operand: 'instruction.Operand'):
+        raise NotImplementedError
 
 for i in ED6FCOperandType:
     globals()[i.name] = i

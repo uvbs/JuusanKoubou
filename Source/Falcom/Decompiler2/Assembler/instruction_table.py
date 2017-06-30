@@ -2,6 +2,9 @@ from Common import *
 from enum import IntEnum
 from . import instruction
 
+if TYPE_CHECKING:
+    from . import disassembler
+
 __all__ = (
     'OperandType',
     'OperandFormat',
@@ -102,11 +105,28 @@ class OperandDescriptor:
         self.format     = format                    # type: OperandFormat
         self.handler    = formatHandler             # type: FormatOperandHandler
 
+    def read(self, fs: fileio.FileStream):
+        return {
+            OperandType.SInt8   : lambda : fs.ReadChar(),
+            OperandType.UInt8   : lambda : fs.ReadByte(),
+
+            OperandType.SInt16  : lambda : fs.ReadShort(),
+            OperandType.UInt16  : lambda : fs.ReadUShort(),
+
+            OperandType.SInt32  : lambda : fs.ReadLong(),
+            OperandType.UInt32  : lambda : fs.ReadULong(),
+
+            OperandType.SInt64  : lambda : fs.ReadLong64(),
+            OperandType.UInt64  : lambda : fs.ReadULong64(),
+
+            OperandType.MBCS    : lambda : fs.ReadMultiByte(self.format.encoding),
+        }[self.format]()
+
     def __str__(self):
         return repr(self.format)
 
     def __repr__(self):
-        return str(self)
+        return self.__str__()
 
 def oprdesc(*args, **kwargs):
     return OperandDescriptor(OperandFormat(*args, **kwargs))
@@ -133,8 +153,16 @@ OperandDescriptor.formatTable = {
 
 
 class InstructionHandlerInfo:
-    def __init__(self):
-        pass
+    class Action(IntEnum):
+        Disassemble = 0
+        Assemble    = 1
+        Format      = 2
+
+    def __init__(self, action: 'InstructionHandlerInfo.Action', descriptor: 'InstructionDescriptor', disasmInfo: 'disassembler.DisassembleInfo'):
+        self.action     = action                                    # type: InstructionHandlerInfo.Action
+        self.descriptor = descriptor                                # type: InstructionDescriptor
+        self.disasmInfo = disasmInfo                                # type: disassembler.DisassembleInfo
+        self.offset     = instruction.Instruction.InvalidOffset     # type: int
 
 InstructionHandler = Callable[[InstructionHandlerInfo], Any]
 
@@ -166,16 +194,28 @@ class InstructionTable:
     def fromOpCode(self, opcode: int) -> InstructionDescriptor:
         return self.lookup[opcode]
 
-    def readInstruction(self, fs: fileio.FileStream) -> 'instruction.Instruction':
+    def readOpCode(self, fs: fileio.FileStream) -> int:
         raise NotImplementedError
 
-    def readOpCode(self, fs: fileio.FileStream) -> int:
+    def writeOpCode(self, fs: fileio.FileStream, inst: 'instruction.Instruction'):
+        raise NotImplementedError
+
+    def readInstruction(self, fs: fileio.FileStream) -> 'instruction.Instruction':
         raise NotImplementedError
 
     def writeInstruction(self, fs: fileio.FileStream, inst: 'instruction.Instruction'):
         raise NotImplementedError
 
-    def writeOpCode(self, fs: fileio.FileStream, inst: 'instruction.Instruction'):
+    def readOperand(self, fs: fileio.FileStream, desc: OperandDescriptor) -> 'instruction.Operand':
+        operand = instruction.Operand()
+
+        operand.size = desc.format.size
+        operand.descriptor = desc
+        operand.value = desc.read(fs)
+
+        return operand
+
+    def writeOperand(self, fs: fileio.FileStream, operand: 'instruction.Operand'):
         raise NotImplementedError
 
     def __str__(self):

@@ -1,4 +1,7 @@
 from Common import *
+from typing import TYPE_CHECKING
+
+# if TYPE_CHECKING:
 from . import instruction
 
 __all__ = (
@@ -13,7 +16,7 @@ class CodeBlock:
         self.offset         = None          # type: int
 
 class Function:
-    def __init__(self, name: str, blocks: List[CodeBlock]):
+    def __init__(self, name: str = '', offset: int = 0, blocks: List[CodeBlock] = None):
+        self.name   = name                  # type: str
+        self.offset = offset                # type: int
         self.blocks = blocks                # type: List[CodeBlock]
-        self.offset = None                  # type: int
-        self.name   = None                  # type: str

@@ -14,12 +14,12 @@ OperandDescriptor = instruction_table.OperandDescriptor
 
 class Label:
     def __init__(self, label: str, offset: int):
-        self.label = label          # type: str
-        self.offset = offset        # type: int
+        self.label = label                          # type: str
+        self.offset = offset                        # type: int
 
 class Operand:
     def __init__(self):
-        self.operand    = None                      # type: int
+        self.value      = None                      # type: Any
         self.size       = None                      # type: int
         self.descriptor = OperandDescriptor.Empty   # type: OperandDescriptor
 
@@ -33,23 +33,23 @@ class Flags(IntFlag):
     FormatArgNewLine    = 1 << 4
 
     @property
-    def isEndBlock(self):
+    def endBlock(self):
         return bool(self.value & self.EndBlock)
 
     @property
-    def isStartBlock(self):
+    def startBlock(self):
         return bool(self.value & self.StartBlock)
 
     @property
-    def isCall(self):
+    def call(self):
         return bool(self.value & self.Call & ~self.StartBlock)
 
     @property
-    def isJump(self):
+    def jump(self):
         return bool(self.value & self.Jump & ~self.EndBlock)
 
     @property
-    def isArgNewLine(self):
+    def argNewLine(self):
         return bool(self.value & self.FormatArgNewLine)
 
     def __str__(self):
@@ -59,10 +59,14 @@ class Flags(IntFlag):
         return self.name
 
 class Instruction:
-    def __init__(self):
-        self.opcode     = None      # type: int
-        self.operands   = []        # type: List[Operand]
-        self.branches   = []        # type: List[function.CodeBlock]
-        self.descriptor = None      # type: instruction_table.InstructionDescriptor
-        self.label      = None      # type: Label
-        self.flags      = None      # type: Flags
+    InvalidOffset   = None
+
+    def __init__(self, opcode: int):
+        self.opcode     = None                      # type: int
+        self.offset     = self.InvalidOffset        # type: int
+        self.size       = 0                         # type: int
+        self.operands   = []                        # type: List[Operand]
+        self.branches   = []                        # type: List[function.CodeBlock]
+        self.descriptor = None                      # type: instruction_table.InstructionDescriptor
+        self.label      = None                      # type: Label
+        self.flags      = None                      # type: Flags

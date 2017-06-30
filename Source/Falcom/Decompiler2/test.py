@@ -8,6 +8,7 @@ def test():
     print(ED6FC.ScenaOpTable)
 
     dis = Assembler.Disassembler()
+    f = dis.disasmFunction(None)
 
 def main():
     test()
