@@ -305,7 +305,7 @@ DrawRune(
 
         for (LONG_PTR w = width; w != 0; ++i, --w)
         {
-            *o++ = FontLumaTable[(RGBA_GetRValue(*i) + RGBA_GetGValue(*i) + RGBA_GetBValue(*i)) / 3];
+            *o++ = FontLumaTable[((RGBA_GetRValue(*i) * 19595 + RGBA_GetGValue(*i) * 38469 + RGBA_GetBValue(*i) * 7472) >> 16) & 0xFF];
         }
 
         pixels -= stride;

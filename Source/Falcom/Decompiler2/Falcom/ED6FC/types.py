@@ -5,7 +5,11 @@ from enum       import IntEnum
 UserDefined = OperandType.UserDefined
 
 class ED6FCOperandType(IntEnum):
-    Offset = UserDefined + 1
+    Offset,     \
+    Item,       \
+    BGM,        \
+    Expression, \
+    UserDefined = range(5)
 
     __str__     = OperandType.__str__
     __repr__    = OperandType.__repr__

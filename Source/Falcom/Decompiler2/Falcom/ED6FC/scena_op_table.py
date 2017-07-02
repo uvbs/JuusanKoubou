@@ -21,6 +21,12 @@ class ED6FCInstructionTable(InstructionTable):
     def writeOperand(self, fs: fileio.FileStream, operand: 'instruction.Operand'):
         raise NotImplementedError
 
+class TextCtrlCode:
+    NewLine     = 0x01
+    WaitEnter   = 0x02
+    Clear       = 0x03
+    SetColor    = 0x07
+
 for i in ED6FCOperandType:
     globals()[i.name] = i
 
@@ -32,56 +38,56 @@ def inst(opcode: int, mnemonic: str, operandfmts: str = None, flags: Flags = Fla
 
     return InstructionDescriptor(opcode = opcode, mnemonic = mnemonic, operands = operands, flags = flags, handler = handler)
 
-def Handler_Jc():
-    pass
+def Handler_Jc(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_Switch():
-    pass
+def Handler_Switch(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_NewScene():
-    pass
+def Handler_NewScene(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_16():
-    pass
+def Handler_16(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_28():
-    pass
+def Handler_28(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_29():
-    pass
+def Handler_29(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_2A():
-    pass
+def Handler_2A(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_41():
-    pass
+def Handler_41(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_QueueWorkItem():
-    pass
+def Handler_QueueWorkItem(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_QueueWorkItem2():
-    pass
+def Handler_QueueWorkItem2(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_RunExpression():
-    pass
+def Handler_RunExpression(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_4F():
-    pass
+def Handler_4F(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_51():
-    pass
+def Handler_51(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_AnonymousTalk():
-    pass
+def Handler_AnonymousTalk(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_ChrTalk():
-    pass
+def Handler_ChrTalk(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_NpcTalk():
-    pass
+def Handler_NpcTalk(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
-def Handler_Menu():
-    pass
+def Handler_Menu(info: InstructionHandlerInfo):
+    raise NotImplementedError
 
 
 ScenaOpTable = ED6FCInstructionTable([
@@ -169,7 +175,7 @@ ScenaOpTable = ED6FCInstructionTable([
     inst(0x51,  'OP_51',                        NoOperand,          Flags.Empty,        Handler_51),
     inst(0x52,  'TalkBegin',                    'W'),
     inst(0x53,  'TalkEnd',                      'W'),
-    inst(0x54,  'AnonymousTalk',                NoOperand,          0,                  Handler_AnonymousTalk),
+    inst(0x54,  'AnonymousTalk',                NoOperand,          Flags.Empty,        Handler_AnonymousTalk),
     inst(0x55,  'OP_55'),
     inst(0x56,  'OP_56',                        'B'),
     inst(0x57,  'OP_57'),

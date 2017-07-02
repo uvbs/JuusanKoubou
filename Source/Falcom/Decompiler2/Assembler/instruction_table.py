@@ -1,6 +1,7 @@
 from Common import *
 from enum import IntEnum
 from . import instruction
+from . import handlers
 
 if TYPE_CHECKING:
     from . import disassembler
@@ -10,8 +11,6 @@ __all__ = (
     'OperandFormat',
     'OperandDescriptor',
     'InstructionDescriptor',
-    'InstructionHandler',
-    'InstructionHandlerInfo',
     'InstructionTable',
 )
 
@@ -83,17 +82,11 @@ class OperandFormat:
         return repr(self.type)
 
     def __repr__(self):
-        return str(self)
+        return self.__str__()
 
     @property
     def size(self):
         return self.sizeTable.get(self.type)
-
-class FormatOperandHandlerInfo:
-    def __init__(self, format: OperandFormat):
-        self.format = format                        # type: OperandFormat
-
-FormatOperandHandler = Callable[[FormatOperandHandlerInfo], Any]
 
 class OperandDescriptor:
     @classmethod
@@ -101,9 +94,9 @@ class OperandDescriptor:
         formatTable = formatTable if formatTable else cls.formatTable
         return tuple(formatTable[f] for f in fmtstr)
 
-    def __init__(self, format: OperandFormat, formatHandler: FormatOperandHandler = None):
+    def __init__(self, format: OperandFormat, formatHandler: 'handlers.FormatOperandHandler' = None):
         self.format     = format                    # type: OperandFormat
-        self.handler    = formatHandler             # type: FormatOperandHandler
+        self.handler    = formatHandler             # type: handlers.FormatOperandHandler
 
     def readValue(self, fs: fileio.FileStream) -> Any:
         return {
@@ -123,7 +116,7 @@ class OperandDescriptor:
         }[self.format.type]()
 
     def __str__(self):
-        return repr(self.format)
+        return str(self.format)
 
     def __repr__(self):
         return self.__str__()
@@ -153,30 +146,22 @@ OperandDescriptor.formatTable = {
     'S' : oprdesc(OperandType.MBCS, encoding = DefaultEncoding)
 }
 
-
-class InstructionHandlerInfo:
-    class Action(IntEnum):
-        Disassemble = 0
-        Assemble    = 1
-        Format      = 2
-
-    def __init__(self, action: 'InstructionHandlerInfo.Action', descriptor: 'InstructionDescriptor', disasmInfo: 'disassembler.DisassembleInfo'):
-        self.action     = action                                    # type: InstructionHandlerInfo.Action
-        self.descriptor = descriptor                                # type: InstructionDescriptor
-        self.disasmInfo = disasmInfo                                # type: disassembler.DisassembleInfo
-        self.offset     = instruction.Instruction.InvalidOffset     # type: int
-
-InstructionHandler = Callable[[InstructionHandlerInfo], Any]
-
 class InstructionDescriptor:
     NoOperand = None
 
-    def __init__(self, opcode: int, mnemonic: str, operands: List[OperandDescriptor] = NoOperand, flags: 'instruction.Flags' = 0, handler: InstructionHandler = None):
+    def __init__(
+            self,
+            opcode:     int,
+            mnemonic:   str,
+            operands:   List[OperandDescriptor] = NoOperand,
+            flags:      'instruction.Flags' = 0,
+            handler:    'handlers.InstructionHandler' = None
+        ):
         self.opcode     = opcode                    # type: int
         self.mnemonic   = mnemonic                  # type: str
         self.operands   = operands                  # type: List[OperandDescriptor]
         self.flags      = flags                     # type: instruction.Flags
-        self.handler    = handler                   # type: InstructionHandler
+        self.handler    = handler                   # type: handlers.InstructionHandler
 
     def __str__(self):
         return ' '.join([

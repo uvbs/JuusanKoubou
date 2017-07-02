@@ -2,6 +2,7 @@ from Common             import *
 from .instruction       import *
 from .instruction_table import *
 from .function          import *
+from .handlers          import *
 
 __all__ = (
     'Disassembler',
@@ -40,6 +41,8 @@ class Disassembler:
         while True:
             inst = self.disasmInstruction(info)
 
+            print(inst)
+
             block.instructions.append(inst)
 
             if not inst.flags.startBlock and not inst.flags.endBlock:
@@ -66,7 +69,13 @@ class Disassembler:
         handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Disassemble, desc, info)
         handlerInfo.offset = pos
 
-        inst = (desc.handler or self.defaultInstructionParser)(handlerInfo)
+        inst = None
+
+        if desc.handler is not None:
+            inst = desc.handler(handlerInfo)
+
+        if inst is None:
+            inst = self.defaultInstructionParser(handlerInfo)
 
         if inst is None:
             raise Exception('disasmInstruction %02X @ %08X failed' % (opcode, pos))

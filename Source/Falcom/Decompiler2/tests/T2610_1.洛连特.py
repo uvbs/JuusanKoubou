@@ -43,14 +43,14 @@ def main():
     OP_22(0x17, 0x0, 0x64)
     SetMessageWindowPos(-1, -1, -1, -1)
     FadeToDark(300, 0, 100)
-    SetChrName("魔兽全部消灭干净了！")
+    SetChrName("七柱")
 
-    # AnonymousTalk(
-    #     (
-    #         scpstr(SCPSTR_CODE_COLOR, 0x5),
-    #         "魔兽全部消灭干净了！\x02",
-    #     )
-    # )
+    AnonymousTalk(
+        (
+            scpstr(SCPSTR_CODE_COLOR, 0x5),
+            "魔兽全部消灭干净了！\x02",
+        )
+    )
 
     CloseMessageWindow()
     OP_56(0x0)
