@@ -1,6 +1,6 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# http://code.google.com/p/protobuf/
+# https://developers.google.com/protocol-buffers/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -35,7 +35,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import struct
 from google.protobuf import descriptor
 from google.protobuf import message
-from google.protobuf.internal.utils import string_to_bytes, b
 
 
 TAG_TYPE_BITS = 3  # Number of bits used to hold type info in a proto tag.
@@ -64,10 +63,10 @@ INT64_MIN = -(1 << 63)
 UINT64_MAX = (1 << 64) - 1
 
 # "struct" format strings that will encode/decode the specified formats.
-FORMAT_UINT32_LITTLE_ENDIAN = b('<I')
-FORMAT_UINT64_LITTLE_ENDIAN = b('<Q')
-FORMAT_FLOAT_LITTLE_ENDIAN = b('<f')
-FORMAT_DOUBLE_LITTLE_ENDIAN = b('<d')
+FORMAT_UINT32_LITTLE_ENDIAN = '<I'
+FORMAT_UINT64_LITTLE_ENDIAN = '<Q'
+FORMAT_FLOAT_LITTLE_ENDIAN = '<f'
+FORMAT_DOUBLE_LITTLE_ENDIAN = '<d'
 
 
 # We'll have to provide alternate implementations of AppendLittleEndian*() on
@@ -182,7 +181,7 @@ def EnumByteSize(field_number, enum):
 
 
 def StringByteSize(field_number, string):
-  return BytesByteSize(field_number, string_to_bytes(string))
+  return BytesByteSize(field_number, string.encode('utf-8'))
 
 
 def BytesByteSize(field_number, b):

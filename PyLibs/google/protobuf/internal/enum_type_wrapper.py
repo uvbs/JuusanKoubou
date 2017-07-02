@@ -1,6 +1,6 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# http://code.google.com/p/protobuf/
+# https://developers.google.com/protocol-buffers/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -46,7 +46,7 @@ class EnumTypeWrapper(object):
   def __init__(self, enum_type):
     """Inits EnumTypeWrapper with an EnumDescriptor."""
     self._enum_type = enum_type
-    self.DESCRIPTOR = enum_type
+    self.DESCRIPTOR = enum_type;
 
   def Name(self, number):
     """Returns a string containing the name of an enum value."""

@@ -1,6 +1,6 @@
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
-# http://code.google.com/p/protobuf/
+# https://developers.google.com/protocol-buffers/
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -52,7 +52,9 @@ class GeneratedServiceType(type):
   runtime, as in this example:
 
   mydescriptor = ServiceDescriptor(.....)
-  MyProtoService=GeneratedServiceType('MyProtoService',(service.Service,),{'DESCRIPTOR':mydescriptor})
+  class MyProtoService(service.Service):
+    __metaclass__ = GeneratedServiceType
+    DESCRIPTOR = mydescriptor
   myservice_instance = MyProtoService()
   ...
   """
