@@ -17,12 +17,15 @@ class ED6FCOperandType(IntEnum):
 class ED6FCOperandFormat(OperandFormat):
     sizeTable = {
         ED6FCOperandType.Offset : 2,
+        ED6FCOperandType.Item   : 2,
+        ED6FCOperandType.BGM    : 2,
 
         **OperandFormat.sizeTable,
     }
 
 class ED6FCOperandDescriptor(OperandDescriptor):
-    pass
+    def formatValue(self, info: 'FormatOperandHandlerInfo') -> str:
+        return super().formatValue(info)
 
 def oprdesc(*args, **kwargs):
     return ED6FCOperandDescriptor(ED6FCOperandFormat(*args, **kwargs))

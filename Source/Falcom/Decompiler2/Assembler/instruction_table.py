@@ -35,8 +35,7 @@ class OperandType(IntEnum):
     Float32,    \
     Float64,    \
     MBCS,       \
-    Bytes,      \
-    UserDefined = range(22)
+    UserDefined = range(21)
 
     def __str__(self):
         return self.name
@@ -70,7 +69,6 @@ class OperandFormat:
         OperandType.Float64 : 8,
 
         OperandType.MBCS    : None,
-        OperandType.Bytes   : None,
     }
 
     def __init__(self, oprType: OperandType, hex: bool = False, encoding: str = 'mbcs'):
@@ -112,8 +110,41 @@ class OperandDescriptor:
             OperandType.SInt64  : lambda : fs.ReadLong64(),
             OperandType.UInt64  : lambda : fs.ReadULong64(),
 
+            OperandType.Float32 : lambda : fs.ReadFloat(),
+            OperandType.Float64 : lambda : fs.ReadDouble(),
+
             OperandType.MBCS    : lambda : fs.ReadMultiByte(self.format.encoding),
         }[self.format.type]()
+
+    def formatValue(self, info: 'handlers.FormatOperandHandlerInfo') -> str:
+        operand = info.operand
+        desc    = operand.descriptor
+        fmt     = desc.format
+
+        def formatInteger():
+            return (fmt.hex and '0x%X' or '%d') % operand.value
+
+        def formatFloat():
+            return '%f' % operand.value
+
+        return {
+            OperandType.SInt8   : formatInteger,
+            OperandType.UInt8   : formatInteger,
+
+            OperandType.SInt16  : formatInteger,
+            OperandType.UInt16  : formatInteger,
+
+            OperandType.SInt32  : formatInteger,
+            OperandType.UInt32  : formatInteger,
+
+            OperandType.SInt64  : formatInteger,
+            OperandType.UInt64  : formatInteger,
+
+            OperandType.Float32 : formatFloat,
+            OperandType.Float64 : formatFloat,
+
+            OperandType.MBCS    : "'%s'" % operand.value,
+        }[desc.format.type]()
 
     def __str__(self):
         return str(self.format)
@@ -142,6 +173,9 @@ OperandDescriptor.formatTable = {
 
     'q' : oprdesc(OperandType.SInt64, hex = True),
     'Q' : oprdesc(OperandType.UInt64, hex = True),
+
+    'f' : oprdesc(OperandType.Float32),
+    'd' : oprdesc(OperandType.Float64),
 
     'S' : oprdesc(OperandType.MBCS, encoding = DefaultEncoding)
 }
@@ -173,13 +207,13 @@ class InstructionDescriptor:
 class InstructionTable:
     def __init__(self, descriptors: List[InstructionDescriptor]):
         self.descriptors    = descriptors           # type: List[InstructionDescriptor]
-        self.lookup         = {}                    # type: Dict[int, InstructionDescriptor]
+        self.descTable      = {}                    # type: Dict[int, InstructionDescriptor]
 
         for desc in self.descriptors:
-            self.lookup[desc.opcode] = desc
+            self.descTable[desc.opcode] = desc
 
     def getDescriptor(self, opcode: int) -> InstructionDescriptor:
-        return self.lookup[opcode]
+        return self.descTable[opcode]
 
     def readOpCode(self, fs: fileio.FileStream) -> int:
         raise NotImplementedError
@@ -204,6 +238,20 @@ class InstructionTable:
 
     def writeOperand(self, fs: fileio.FileStream, operand: 'instruction.Operand'):
         raise NotImplementedError
+
+    def formatOperand(self, info: 'handlers.FormatOperandHandlerInfo') -> str:
+        result  = None
+        operand = info.operand
+        desc    = operand.descriptor
+
+        handler = info.operand.descriptor.handler
+        if handler is not None:
+            result = handler(info)
+
+        if result is None:
+            result = desc.formatValue(info)
+
+        return result
 
     def __str__(self):
         return '\n'.join(['%s' % x for x in self.descriptors])
