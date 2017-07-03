@@ -27,6 +27,9 @@ class TextCtrlCode:
     Clear       = 0x03
     SetColor    = 0x07
 
+class Expression:
+    pass
+
 for i in ED6FCOperandType:
     globals()[i.name] = i
 
