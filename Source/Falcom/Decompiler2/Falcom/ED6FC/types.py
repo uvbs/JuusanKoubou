@@ -16,9 +16,10 @@ class ED6FCOperandType(IntEnum):
 
 class ED6FCOperandFormat(OperandFormat):
     sizeTable = {
-        ED6FCOperandType.Offset : 2,
-        ED6FCOperandType.Item   : 2,
-        ED6FCOperandType.BGM    : 2,
+        ED6FCOperandType.Offset     : 2,
+        ED6FCOperandType.Item       : 2,
+        ED6FCOperandType.BGM        : 2,
+        ED6FCOperandType.Expression : None,
 
         **OperandFormat.sizeTable,
     }
