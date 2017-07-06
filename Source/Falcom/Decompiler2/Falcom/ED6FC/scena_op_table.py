@@ -24,15 +24,31 @@ class ED6FCInstructionTable(InstructionTable):
 for i in ED6FCOperandType:
     globals()[i.name] = i
 
-def inst(opcode: int, mnemonic: str, operandfmts: str = None, flags: Flags = Flags.Empty, handler: InstructionHandler = None) -> InstructionDescriptor:
-    if operandfmts is NoOperand:
-        operands = NoOperand
-    else:
-        operands = ED6FCOperandDescriptor.fromFormatString(operandfmts)
+for i in TextCtrlCode:
+    globals()[i.name] = i
 
-    return InstructionDescriptor(opcode = opcode, mnemonic = mnemonic, operands = operands, flags = flags, handler = handler)
+def formatTextObjects(objs: List[TextObject], depth: int = 1) -> List[str]:
+    text = []
 
-def Handler_Jc(info: InstructionHandlerInfo):
+    indent = '    ' * depth
+
+    for o in objs:
+        if o.code is None:
+            text.append(repr(o.value))
+            continue
+
+        if o.value is None:
+            text.append(str(o.code))
+            continue
+
+        text.append('(%s, %s)' % (o.code, o.value))
+
+    for i, t in enumerate(text):
+        text[i] = indent + t
+
+    return text
+
+def Handler_If(info: InstructionHandlerInfo):
     raise NotImplementedError
 
 def Handler_Switch(info: InstructionHandlerInfo):
@@ -75,6 +91,11 @@ def Handler_AnonymousTalk(info: InstructionHandlerInfo):
     if info.action != info.Action.Format:
         return
 
+    inst = info.instruction
+    inst.flags |= Flags.FormatArgNewLine
+
+    return ['%s(' % inst.descriptor.mnemonic, *formatTextObjects(inst.operands[0].value), ')']
+
 def Handler_ChrTalk(info: InstructionHandlerInfo):
     raise NotImplementedError
 
@@ -84,11 +105,18 @@ def Handler_NpcTalk(info: InstructionHandlerInfo):
 def Handler_Menu(info: InstructionHandlerInfo):
     raise NotImplementedError
 
+def inst(opcode: int, mnemonic: str, operandfmts: str = None, flags: Flags = Flags.Empty, handler: InstructionHandler = None) -> InstructionDescriptor:
+    if operandfmts is NoOperand:
+        operands = NoOperand
+    else:
+        operands = ED6FCOperandDescriptor.fromFormatString(operandfmts)
+
+    return InstructionDescriptor(opcode = opcode, mnemonic = mnemonic, operands = operands, flags = flags, handler = handler)
 
 ScenaOpTable = ED6FCInstructionTable([
     inst(0x00,  'ExitThread'),
     inst(0x01,  'Return',                       NoOperand,          Flags.EndBlock),
-    inst(0x02,  'Jc',                           NoOperand,          Flags.StartBlock,   Handler_Jc),
+    inst(0x02,  'If',                           NoOperand,          Flags.StartBlock,   Handler_If),
     inst(0x03,  'Jump',                         'o',                Flags.Jump),
     inst(0x04,  'Switch',                       NoOperand,          Flags.EndBlock,     Handler_Switch),
     inst(0x05,  'Call',                         'CH'),                                                      # Call(scp index, func index)
@@ -276,3 +304,5 @@ ScenaOpTable = ED6FCInstructionTable([
     inst(0xBB,  'OP_BB',                        'BB'),
     inst(0xBC,  'SaveClearData'),
 ])
+
+del inst

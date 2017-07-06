@@ -23,11 +23,12 @@ class BaseHandlerInfo:
         self.action = action # type: BaseHandlerInfo.Action
 
 class InstructionHandlerInfo(BaseHandlerInfo):
-    def __init__(self, action: 'BaseHandlerInfo.Action', descriptor: 'instruction_table.InstructionDescriptor', disasmInfo: 'disassembler.DisassembleInfo'):
+    def __init__(self, action: 'BaseHandlerInfo.Action', descriptor: 'instruction_table.InstructionDescriptor'):
         super().__init__(action)
-        self.descriptor = descriptor                                # type: instruction_table.InstructionDescriptor
-        self.disasmInfo = disasmInfo                                # type: disassembler.DisassembleInfo
-        self.offset     = instruction.Instruction.InvalidOffset     # type: int
+        self.descriptor     = descriptor                                # type: instruction_table.InstructionDescriptor
+        self.disasmInfo     = None                                      # type: disassembler.DisassembleInfo
+        self.instruction    = None                                      # type: instruction.Instruction
+        self.offset         = instruction.Instruction.InvalidOffset     # type: int
 
 InstructionHandler = Callable[[InstructionHandlerInfo], Any]
 

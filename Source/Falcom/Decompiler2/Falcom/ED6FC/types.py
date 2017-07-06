@@ -68,7 +68,12 @@ class ED6FCOperandDescriptor(OperandDescriptor):
 
             containsCtrlCodes = True
 
-            o = TextObject(code = c)
+            try:
+                code = TextCtrlCode(c)
+            except ValueError:
+                code = c
+
+            o = TextObject(code = code)
 
             if c in [
                     TextCtrlCode.NewLine,
@@ -80,6 +85,7 @@ class ED6FCOperandDescriptor(OperandDescriptor):
                     TextCtrlCode.ShowAll,
                     0x18,
                 ]:
+                o.code = TextCtrlCode(o.code)
                 pass
 
             elif c == TextCtrlCode.SetColor:
@@ -105,7 +111,7 @@ ED6FCOperandDescriptor.formatTable = {
     'S' : oprdesc(OperandType.MBCS),
 }
 
-class TextCtrlCode:
+class TextCtrlCode(IntEnum):
     NewLine         = 0x01
     NewLine2        = 0x0A
     WaitForEnter    = 0x02
@@ -114,6 +120,12 @@ class TextCtrlCode:
     ShowAll         = 0x06
     SetColor        = 0x07
     Item            = 0x1F
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.__str__()
 
 class TextObject:
     def __init__(self, code: int = None, value: Any = None):
@@ -125,9 +137,9 @@ class TextObject:
             return "'%s'" % self.value
 
         if self.value is not None:
-            return 'code = %02X, value = %s' % (self.code, self.value)
+            return 'code = %s, value = %s' % (self.code, self.value)
 
-        return 'code = %02X' % self.code
+        return 'code = %s' % self.code
 
     def __repr__(self):
         return self.__str__()

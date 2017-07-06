@@ -143,7 +143,7 @@ class OperandDescriptor:
             OperandType.Float32 : formatFloat,
             OperandType.Float64 : formatFloat,
 
-            OperandType.MBCS    : lambda : "'%s'" % operand.value,
+            OperandType.MBCS    : lambda : repr(operand.value),
         }[desc.format.type]()
 
     def __str__(self):

@@ -70,8 +70,10 @@ class Disassembler:
 
         desc = self.instructionTable.getDescriptor(opcode)
 
-        handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Disassemble, desc, info)
-        handlerInfo.offset = pos
+        handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Disassemble, desc)
+
+        handlerInfo.offset      = pos
+        handlerInfo.disasmInfo  = info
 
         inst = None
 
@@ -110,11 +112,27 @@ class Disassembler:
         text = []
 
         for inst in block.instructions:
-            text.append(''.join(self.formatInstruction(inst)))
+            t = self.formatInstruction(inst)
+            if not inst.flags.argNewLine:
+                text.append(''.join(t))
+                continue
+
+            text.append('')
+            text.append(',\n'.join(t))
+            text.append('')
 
         return text
 
     def formatInstruction(self, inst: Instruction) -> List[str]:
+        handler = inst.descriptor.handler
+        if handler is not None:
+            handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Format, inst.descriptor)
+            handlerInfo.instruction = inst
+
+            ret = handler(handlerInfo)
+            if ret is not None:
+                return ret
+
         mnemonic = inst.descriptor.mnemonic
         operands = self.instructionTable.formatAllOperand(inst.operands)
 
