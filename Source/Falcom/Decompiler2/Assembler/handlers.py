@@ -33,7 +33,7 @@ InstructionHandler = Callable[[InstructionHandlerInfo], Any]
 
 
 class FormatOperandHandlerInfo:
-    def __init__(self, operand: 'instruction.Operand', labels: 'Dict[int, str]'):
+    def __init__(self, operand: 'instruction.Operand', labels: 'Dict[int, str]' = None):
         self.operand = operand          # type: instruction.Operand
         self.labels  = labels or {}     # type: Dict[int, str]
 

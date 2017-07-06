@@ -16,11 +16,11 @@ def test():
 
     info = Assembler.DisassembleInfo(fs)
 
-    f = dis.disasmFunction(info)
+    fun = dis.disasmFunction(info)
 
-    f.name = 'test'
+    fun.name = 'test'
 
-    print(f)
+    print('\n'.join(dis.formatFuncion(fun)))
 
 def main():
     test()

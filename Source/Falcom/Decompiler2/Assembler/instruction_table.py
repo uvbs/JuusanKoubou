@@ -143,7 +143,7 @@ class OperandDescriptor:
             OperandType.Float32 : formatFloat,
             OperandType.Float64 : formatFloat,
 
-            OperandType.MBCS    : "'%s'" % operand.value,
+            OperandType.MBCS    : lambda : "'%s'" % operand.value,
         }[desc.format.type]()
 
     def __str__(self):
@@ -252,6 +252,14 @@ class InstructionTable:
             result = desc.formatValue(info)
 
         return result
+
+    def formatAllOperand(self, operands: 'List[Operand]') -> List[str]:
+        text = []
+        for opr in operands:
+            info = handlers.FormatOperandHandlerInfo(opr)
+            text.append(self.formatOperand(info))
+
+        return text
 
     def __str__(self):
         return '\n'.join(['%s' % x for x in self.descriptors])

@@ -19,13 +19,13 @@ class CodeBlock:
         return '\n'.join(['%s' % inst for inst in self.instructions])
 
 class Function:
-    def __init__(self, name: str = '', offset: int = 0, blocks: List[CodeBlock] = None):
+    def __init__(self, name: str = '', offset: int = 0):
         self.name   = name                  # type: str
         self.offset = offset                # type: int
-        self.blocks = blocks                # type: List[CodeBlock]
+        self.block  = None                  # type: CodeBlock
 
     def __str__(self):
         return '\n'.join([
             '%s @ 0x%X' % (self.name, self.offset),
-            '%s' % self.blocks,
+            '%s' % self.block,
         ])

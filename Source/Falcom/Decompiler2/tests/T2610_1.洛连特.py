@@ -45,12 +45,12 @@ def main():
     FadeToDark(300, 0, 100)
     SetChrName("七柱")
 
-    AnonymousTalk(
-        (
-            scpstr(SCPSTR_CODE_COLOR, 0x5),
-            "魔兽全部消灭干净了！\x02",
-        )
-    )
+    # AnonymousTalk(
+    #     (
+    #         scpstr(SCPSTR_CODE_COLOR, 0x5),
+    #         "魔兽全部消灭干净了！\x02",
+    #     )
+    # )
 
     CloseMessageWindow()
     OP_56(0x0)

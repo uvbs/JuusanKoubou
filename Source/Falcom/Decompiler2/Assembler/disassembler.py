@@ -22,7 +22,7 @@ class Disassembler:
         fun = Function()
 
         fun.offset = info.fs.Position
-        fun.blocks = self.disasmBlock(info)
+        fun.block = self.disasmBlock(info)
 
         return fun
 
@@ -40,8 +40,6 @@ class Disassembler:
 
         while True:
             inst = self.disasmInstruction(info)
-
-            print(inst)
 
             block.instructions.append(inst)
 
@@ -98,3 +96,20 @@ class Disassembler:
         inst.flags      = desc.flags
 
         return inst
+
+    def formatFuncion(self, fun: Function) -> List[str]:
+        return self.formatBlock(fun.block)
+
+    def formatBlock(self, block: CodeBlock) -> List[str]:
+        text = []
+
+        for inst in block.instructions:
+            text.append(''.join(self.formatInstruction(inst)))
+
+        return text
+
+    def formatInstruction(self, inst: Instruction) -> List[str]:
+        mnemonic = inst.descriptor.mnemonic
+        operands = self.instructionTable.formatAllOperand(inst.operands)
+
+        return ['%s(%s)' % (mnemonic, ', '.join(operands))]
