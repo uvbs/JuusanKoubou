@@ -28,6 +28,9 @@ class Operand:
     def __str__(self):
         return '%s' % self.value
 
+    def __repr__(self):
+        return self.__str__()
+
 class Flags(IntFlag):
     Empty               = 0
     EndBlock            = 1 << 0
@@ -67,7 +70,7 @@ class Instruction:
     InvalidOffset   = None
 
     def __init__(self, opcode: int):
-        self.opcode     = None                      # type: int
+        self.opcode     = opcode                    # type: int
         self.offset     = self.InvalidOffset        # type: int
         self.size       = 0                         # type: int
         self.operands   = []                        # type: List[Operand]
@@ -78,3 +81,6 @@ class Instruction:
 
     def __str__(self):
         return '%s(%s)' % (self.descriptor.mnemonic, ', '.join(['%s' % opr for opr in self.operands]))
+
+    def __repr__(self):
+        return self.__str__()

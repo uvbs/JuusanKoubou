@@ -10,7 +10,7 @@ def test():
     dis = Assembler.Disassembler(ED6FC.ScenaOpTable)
 
     fs = fileio.FileStream()
-    fs.Open('tests\\T2610_1 ._SN')
+    fs.OpenMemory(open('tests\\T2610_1 ._SN', 'rb').read())
 
     fs.Position = 0x64
 

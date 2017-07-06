@@ -71,7 +71,7 @@ class OperandFormat:
         OperandType.MBCS    : None,
     }
 
-    def __init__(self, oprType: OperandType, hex: bool = False, encoding: str = 'mbcs'):
+    def __init__(self, oprType: OperandType, hex: bool = False, encoding: str = 'GBK'):
         self.type       = oprType                   # type: OperandType
         self.hex        = hex                       # type: bool
         self.encoding   = encoding                  # type: str
@@ -230,9 +230,14 @@ class InstructionTable:
     def readOperand(self, fs: fileio.FileStream, desc: OperandDescriptor) -> 'instruction.Operand':
         operand = instruction.Operand()
 
+        pos = fs.Position
+
         operand.size = desc.format.size
         operand.descriptor = desc
         operand.value = desc.readValue(fs)
+
+        if operand.size is None:
+            operand.size = fs.Position - pos
 
         return operand
 

@@ -21,15 +21,6 @@ class ED6FCInstructionTable(InstructionTable):
     def writeOperand(self, fs: fileio.FileStream, operand: 'instruction.Operand'):
         raise NotImplementedError
 
-class TextCtrlCode:
-    NewLine     = 0x01
-    WaitEnter   = 0x02
-    Clear       = 0x03
-    SetColor    = 0x07
-
-class Expression:
-    pass
-
 for i in ED6FCOperandType:
     globals()[i.name] = i
 
@@ -81,7 +72,8 @@ def Handler_51(info: InstructionHandlerInfo):
     raise NotImplementedError
 
 def Handler_AnonymousTalk(info: InstructionHandlerInfo):
-    raise NotImplementedError
+    if info.action != info.Action.Format:
+        return
 
 def Handler_ChrTalk(info: InstructionHandlerInfo):
     raise NotImplementedError
@@ -178,11 +170,11 @@ ScenaOpTable = ED6FCInstructionTable([
     inst(0x51,  'OP_51',                        NoOperand,          Flags.Empty,        Handler_51),
     inst(0x52,  'TalkBegin',                    'W'),
     inst(0x53,  'TalkEnd',                      'W'),
-    inst(0x54,  'AnonymousTalk',                NoOperand,          Flags.Empty,        Handler_AnonymousTalk),
+    inst(0x54,  'AnonymousTalk',                'S',                Flags.Empty,        Handler_AnonymousTalk),
     inst(0x55,  'OP_55'),
     inst(0x56,  'OP_56',                        'B'),
     inst(0x57,  'OP_57'),
-    inst(0x58,  'CloseMessageWindow'),
+    inst(0x58,  'WaitAndCloseMessageWindow'),
     inst(0x59,  'OP_59'),
     inst(0x5A,  'SetMessageWindowPos',          'hhhh'),  # SetMessageWindowPos(x, y, -1, -1)
     inst(0x5B,  'ChrTalk',                      NoOperand,          Flags.Empty,        Handler_ChrTalk),

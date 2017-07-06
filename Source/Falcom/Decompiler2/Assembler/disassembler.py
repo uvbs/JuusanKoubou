@@ -60,9 +60,15 @@ class Disassembler:
         return block
 
     def disasmInstruction(self, info: DisassembleInfo) -> Instruction:
-        pos     = info.fs.Position
-        opcode  = self.instructionTable.readOpCode(info.fs)
-        desc    = self.instructionTable.getDescriptor(opcode)
+        pos = info.fs.Position
+
+        try:
+            opcode = self.instructionTable.readOpCode(info.fs)
+        except Exception as e:
+            print('error occur %s @ position %X' % (e, pos))
+            raise e
+
+        desc = self.instructionTable.getDescriptor(opcode)
 
         handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Disassemble, desc, info)
         handlerInfo.offset = pos
