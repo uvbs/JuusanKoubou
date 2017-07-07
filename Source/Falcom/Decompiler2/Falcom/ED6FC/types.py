@@ -29,10 +29,13 @@ class ED6FCOperandDescriptor(OperandDescriptor):
         return super().formatValue(info)
 
     def readValue(self, fs: fileio.FileStream) -> Any:
-        if self.format.type != OperandType.MBCS:
-            return super().readValue(fs)
+        return {
+            OperandType.MBCS        : self.readText,
+            ED6FCOperandType.Offset : lambda fs: fs.ReadUShort(),
+            ED6FCOperandType.Item   : lambda fs: fs.ReadUShort(),
+            ED6FCOperandType.BGM    : lambda fs: fs.ReadShort(),
 
-        return self.readText(fs)
+        }.get(self.format.type, super().readValue)()
 
     def readText(self, fs: fileio.FileStream) -> 'List[TextObject]':
         s = bytearray()
