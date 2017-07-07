@@ -35,7 +35,7 @@ class ED6FCOperandDescriptor(OperandDescriptor):
             ED6FCOperandType.Item   : lambda fs: fs.ReadUShort(),
             ED6FCOperandType.BGM    : lambda fs: fs.ReadShort(),
 
-        }.get(self.format.type, super().readValue)()
+        }.get(self.format.type, super().readValue)(fs)
 
     def readText(self, fs: fileio.FileStream) -> 'List[TextObject]':
         s = bytearray()
