@@ -19,8 +19,8 @@ class BaseHandlerInfo:
         Assemble    = 1
         Format      = 2
 
-    def __init__(self, action: 'BaseHandlerInfo.Action'):
-        self.action = action # type: BaseHandlerInfo.Action
+    def __init__(self, action: Action):
+        self.action = action # type: Action
 
 class InstructionHandlerInfo(BaseHandlerInfo):
     def __init__(self, action: 'BaseHandlerInfo.Action', descriptor: 'instruction_table.InstructionDescriptor'):

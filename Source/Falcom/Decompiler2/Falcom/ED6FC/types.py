@@ -148,4 +148,46 @@ class TextObject:
         return self.__str__()
 
 class Expression:
-    pass
+    class Operator(IntEnum):
+        Push                = 0x00
+        End                 = 0x01
+        Equ                 = 0x02
+        Neq                 = 0x03
+        Lss                 = 0x04
+        Gtr                 = 0x05
+        Leq                 = 0x06
+        Ge                  = 0x07
+        Ez                  = 0x08
+        Nez64               = 0x09
+        And                 = 0x0A
+        Or                  = 0x0B
+        Add                 = 0x0C
+        Sub                 = 0x0D
+        Neg                 = 0x0E
+        Xor                 = 0x0F
+        IMul                = 0x10
+        IDiv                = 0x11
+        IMod                = 0x12
+        Stub                = 0x13
+        IMul2               = 0x14
+        IDiv2               = 0x15
+        IMod2               = 0x16
+        Add2                = 0x17
+        Sub2                = 0x18
+        And2                = 0x19
+        Xor2                = 0x1A
+        Or2                 = 0x1B
+        Exec                = 0x1C
+        Not                 = 0x1D
+        TestScenaFlags      = 0x1E
+        GetResult           = 0x1F
+        PushValueIndex      = 0x20
+        GetChrWork          = 0x21
+        Rand                = 0x22
+
+    def __init__(self, operator: Operator, *operand: Tuple[int]):
+        self.operator   = operator          # type: Operator
+        self.operand    = operand and None  # type: Tuple[int]
+
+    def readOperand(self, fs: fileio.FileStream) -> Tuple[int]:
+        pass
