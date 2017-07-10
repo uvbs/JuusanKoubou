@@ -147,7 +147,7 @@ class TextObject:
     def __repr__(self):
         return self.__str__()
 
-class Expression:
+class ScenaExpression:
     class Operator(IntEnum):
         Push                = 0x00
         End                 = 0x01
@@ -185,9 +185,33 @@ class Expression:
         GetChrWork          = 0x21
         Rand                = 0x22
 
+    @classmethod
+    def readExpressions(cls, fs: fileio.FileStream) -> 'List[Expression]':
+        Operator = cls.Operator
+
+        exps = []
+
+        while True:
+            e = cls(operator = fs.ReadByte())
+            e.readOperand(fs)
+
+            exps.append(e)
+
+            if e.operator == Operator.End:
+                break
+
+        return exps
+
     def __init__(self, operator: Operator, *operand: Tuple[int]):
         self.operator   = operator          # type: Operator
         self.operand    = operand and None  # type: Tuple[int]
 
     def readOperand(self, fs: fileio.FileStream) -> Tuple[int]:
-        pass
+        Operator = self.Operator
+
+        self.operand = {
+            Operator.Push   : lambda: fs.ReadULong(),
+
+        }[self.operator]()
+
+        return self.operand

@@ -94,6 +94,8 @@ def Handler_AnonymousTalk(info: InstructionHandlerInfo):
     inst = info.instruction
     inst.flags |= Flags.FormatArgNewLine
 
+    ScenaExpression.readExpressions(fileio.FileStream().OpenMemory(b'12345'))
+
     return ['%s(' % inst.descriptor.mnemonic, *formatTextObjects(inst.operands[0].value), ')']
 
 def Handler_ChrTalk(info: InstructionHandlerInfo):
