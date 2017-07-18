@@ -1,13 +1,12 @@
 [console_scripts]
 easy_install = setuptools.command.easy_install:main
-easy_install-3.6 = setuptools.command.easy_install:main
+easy_install-3.5 = setuptools.command.easy_install:main
 
 [distutils.commands]
 alias = setuptools.command.alias:alias
 bdist_egg = setuptools.command.bdist_egg:bdist_egg
 bdist_rpm = setuptools.command.bdist_rpm:bdist_rpm
 bdist_wininst = setuptools.command.bdist_wininst:bdist_wininst
-build_clib = setuptools.command.build_clib:build_clib
 build_ext = setuptools.command.build_ext:build_ext
 build_py = setuptools.command.build_py:build_py
 develop = setuptools.command.develop:develop
