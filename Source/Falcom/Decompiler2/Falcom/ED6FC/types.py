@@ -1,15 +1,14 @@
 from Common     import *
 from Assembler  import *
-from enum       import IntEnum
 
-UserDefined = OperandType.UserDefined
+UserDefined = OperandType.UserDefined + 1
 
-class ED6FCOperandType(IntEnum):
+class ED6FCOperandType(IntEnum2):
     Offset,     \
     Item,       \
     BGM,        \
     Expression, \
-    UserDefined = range(5)
+    UserDefined = range(UserDefined, UserDefined + 5)
 
     __str__     = OperandType.__str__
     __repr__    = OperandType.__repr__
@@ -25,19 +24,19 @@ class ED6FCOperandFormat(OperandFormat):
     }
 
 class ED6FCOperandDescriptor(OperandDescriptor):
-    def formatValue(self, info: 'FormatOperandHandlerInfo') -> str:
-        return super().formatValue(info)
-
-    def readValue(self, fs: fileio.FileStream) -> Any:
+    def readValue(self, info: 'handlers.InstructionHandlerInfo') -> Any:
         return {
-            OperandType.MBCS        : self.readText,
-            ED6FCOperandType.Offset : lambda fs: fs.ReadUShort(),
-            ED6FCOperandType.Item   : lambda fs: fs.ReadUShort(),
-            ED6FCOperandType.BGM    : lambda fs: fs.ReadShort(),
+            OperandType.MBCS            : self.readText,
+            ED6FCOperandType.Expression : self.readExpression,
+            ED6FCOperandType.Offset     : lambda info: info.disasmInfo.fs.ReadUShort(),
+            ED6FCOperandType.Item       : lambda info: info.disasmInfo.fs.ReadUShort(),
+            ED6FCOperandType.BGM        : lambda info: info.disasmInfo.fs.ReadShort(),
 
-        }.get(self.format.type, super().readValue)(fs)
+        }.get(self.format.type, super().readValue)(info)
 
-    def readText(self, fs: fileio.FileStream) -> 'List[TextObject]':
+    def readText(self, info: 'handlers.InstructionHandlerInfo') -> 'List[TextObject]':
+        fs = info.disasmInfo.fs
+
         s = bytearray()
         objs = []                   # type: List[TextObject]
         containsCtrlCodes = False
@@ -104,6 +103,72 @@ class ED6FCOperandDescriptor(OperandDescriptor):
 
         return objs
 
+    def readExpression(self, info: 'handlers.InstructionHandlerInfo') -> 'List[ScenaExpression]':
+        return ScenaExpression.readExpressions(info)
+
+    def formatValue(self, info: 'FormatOperandHandlerInfo') -> str:
+        return {
+            OperandType.MBCS            : self.formatTextObjects,
+            ED6FCOperandType.Expression : self.formatExpression,
+            ED6FCOperandType.Offset     : lambda info: "'%s'" % info.operand.value.name,    # CodeBlock
+            # ED6FCOperandType.Item       : ,
+            # ED6FCOperandType.BGM        : ,
+
+        }.get(self.format.type, super().formatValue)(info)
+
+    def formatTextObjects(self, info: 'FormatOperandHandlerInfo', depth: int = 1) -> List[str]:
+        if isinstance(info.operand.value, str):
+            return super().formatValue(info)
+
+        info.instruction.flags |= Flags.FormatArgNewLine
+
+        text = []
+
+        indent = DefaultIndent * (depth - 1)
+
+        objs = info.operand.value       # type: List[TextObject]
+
+        for o in objs:
+            if o.code is None:
+                text.append(repr(o.value))
+                continue
+
+            if o.value is None:
+                text.append(str(o.code))
+                continue
+
+            text.append('(%s, %s)' % (o.code, o.value))
+
+        for i, t in enumerate(text):
+            text[i] = indent + t
+
+        return text
+
+    def formatExpression(self, info: FormatOperandHandlerInfo) -> List[str]:
+        info.instruction.flags |= Flags.FormatArgNewLine
+
+        expr = info.operand.value           # type: List[ScenaExpression]
+        text = []
+
+        for e in expr:
+            if isinstance(e.operator, IntEnum2):
+                opr = str(e.operator)
+            else:
+                opr = '0x%02X' % e.operator
+
+            if e.operator == ScenaExpression.Operator.TestScenaFlags:
+                t = '(%s, ScenaFlags(0x%02X, %d))' % (opr, e.operand >> 3, e.operand & 7)
+
+            elif e.operand:
+                t = '(%s, %s)' % (opr, e.operand)
+
+            else:
+                t = opr
+
+            text.append(t)
+
+        return text
+
 def oprdesc(*args, **kwargs):
     return ED6FCOperandDescriptor(ED6FCOperandFormat(*args, **kwargs))
 
@@ -112,9 +177,10 @@ ED6FCOperandDescriptor.formatTable = {
 
     'o' : oprdesc(ED6FCOperandType.Offset),
     'S' : oprdesc(OperandType.MBCS),
+    'E' : oprdesc(ED6FCOperandType.Expression),
 }
 
-class TextCtrlCode(IntEnum):
+class TextCtrlCode(IntEnum2):
     NewLine         = 0x01
     NewLine2        = 0x0A
     WaitForEnter    = 0x02
@@ -123,12 +189,6 @@ class TextCtrlCode(IntEnum):
     ShowAll         = 0x06
     SetColor        = 0x07
     Item            = 0x1F
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.__str__()
 
 class TextObject:
     def __init__(self, code: int = None, value: Any = None):
@@ -148,7 +208,7 @@ class TextObject:
         return self.__str__()
 
 class ScenaExpression:
-    class Operator(IntEnum):
+    class Operator(IntEnum2):
         Push                = 0x00
         End                 = 0x01
         Equ                 = 0x02
@@ -186,14 +246,15 @@ class ScenaExpression:
         Rand                = 0x22
 
     @classmethod
-    def readExpressions(cls, fs: fileio.FileStream) -> 'List[Expression]':
+    def readExpressions(cls, info: 'handlers.InstructionHandlerInfo') -> 'List[ScenaExpression]':
         Operator = cls.Operator
 
+        fs = info.disasmInfo.fs
         exps = []
 
         while True:
             e = cls(operator = fs.ReadByte())
-            e.readOperand(fs)
+            e.readOperand(info)
 
             exps.append(e)
 
@@ -204,14 +265,40 @@ class ScenaExpression:
 
     def __init__(self, operator: Operator, *operand: Tuple[int]):
         self.operator   = operator          # type: Operator
-        self.operand    = operand and None  # type: Tuple[int]
+        self.operand    = operand or None   # type: Tuple[int]
 
-    def readOperand(self, fs: fileio.FileStream) -> Tuple[int]:
+        if not isinstance(operator, self.Operator):
+            try:
+                self.operator = self.Operator(operator)
+            except ValueError:
+                pass
+
+    def readOperand(self, info: 'handlers.InstructionHandlerInfo') -> Tuple[int]:
         Operator = self.Operator
 
-        self.operand = {
-            Operator.Push   : lambda: fs.ReadULong(),
+        fs = info.disasmInfo.fs
 
-        }[self.operator]()
+        if self.operator == Operator.Exec:
+            pass
+
+        reader = {
+            Operator.Push           : lambda: fs.ReadULong(),
+            Operator.TestScenaFlags : lambda: fs.ReadUShort(),
+            Operator.GetResult      : lambda: fs.ReadUShort(),
+            Operator.PushValueIndex : lambda: fs.ReadByte(),
+            Operator.GetChrWork     : lambda: (fs.ReadUShort(), fs.ReadByte()),
+        }.get(self.operator)
+
+        if reader is not None:
+            self.operand = reader()
 
         return self.operand
+
+    def __str__(self):
+        if self.operand:
+            return '%s %s' % (self.operator, self.operand)
+
+        return str(self.operator)
+
+    def __repr__(self):
+        return self.__str__()

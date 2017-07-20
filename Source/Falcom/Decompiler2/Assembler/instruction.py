@@ -1,5 +1,4 @@
 from Common import *
-from enum import IntFlag
 from . import instruction_table
 
 if TYPE_CHECKING:
@@ -31,7 +30,7 @@ class Operand:
     def __repr__(self):
         return self.__str__()
 
-class Flags(IntFlag):
+class Flags(IntFlag2):
     Empty               = 0
     EndBlock            = 1 << 0
     StartBlock          = 1 << 1
@@ -59,12 +58,6 @@ class Flags(IntFlag):
     @property
     def argNewLine(self):
         return bool(self.value & self.FormatArgNewLine)
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.name
 
 class Instruction:
     InvalidOffset   = None

@@ -57,6 +57,27 @@ def main():
     FadeToBright(300, 0)
     SetMessageWindowPos(72, 320, 56, 3)
     EventEnd(0x1)
+
+    Jc(
+        (
+            scpexpr(EXPR_TEST_SCENA_FLAGS, MakeScenarioFlags(0x62, 2)),
+            # scpexpr(EXPR_EXEC_OP, "OP_29(0xF, 0x0, 0x40)"),
+            scpexpr(EXPR_EQUZ),
+            scpexpr(EXPR_NEQUZ_I64),
+            # scpexpr(EXPR_EXEC_OP, "OP_29(0xF, 0x1, 0x8000)"),
+            scpexpr(EXPR_EQUZ),
+            scpexpr(EXPR_NEQUZ_I64),
+            scpexpr(EXPR_END),
+        ),
+        "loc_1CE",
+    )
+
+    Event(1, 0)
+
+    label("loc_1CE")
+
+    Event(2, 0)
+
     Return()
 
     # Function_0_66 end

@@ -1,5 +1,4 @@
 from Common import *
-from enum import IntEnum
 from . import instruction
 from . import handlers
 
@@ -14,7 +13,7 @@ __all__ = (
     'InstructionTable',
 )
 
-class OperandType(IntEnum):
+class OperandType(IntEnum2):
     Empty,      \
     SInt8,      \
     SInt16,     \
@@ -96,7 +95,9 @@ class OperandDescriptor:
         self.format     = format                    # type: OperandFormat
         self.handler    = formatHandler             # type: handlers.FormatOperandHandler
 
-    def readValue(self, fs: fileio.FileStream) -> Any:
+    def readValue(self, info: 'handlers.InstructionHandlerInfo') -> Any:
+        fs = info.disasmInfo.fs
+
         return {
             OperandType.SInt8   : lambda : fs.ReadChar(),
             OperandType.UInt8   : lambda : fs.ReadByte(),
@@ -227,14 +228,16 @@ class InstructionTable:
     def writeInstruction(self, fs: fileio.FileStream, inst: 'instruction.Instruction'):
         raise NotImplementedError
 
-    def readOperand(self, fs: fileio.FileStream, desc: OperandDescriptor) -> 'instruction.Operand':
+    def readOperand(self, info: 'handlers.InstructionHandlerInfo', inst: 'instruction.Instruction', desc: OperandDescriptor) -> 'instruction.Operand':
         operand = instruction.Operand()
+
+        fs = info.disasmInfo.fs
 
         pos = fs.Position
 
         operand.size = desc.format.size
         operand.descriptor = desc
-        operand.value = desc.readValue(fs)
+        operand.value = desc.readValue(info)
 
         if operand.size is None:
             operand.size = fs.Position - pos
@@ -258,11 +261,16 @@ class InstructionTable:
 
         return result
 
-    def formatAllOperand(self, operands: 'List[Operand]') -> List[str]:
+    def formatAllOperand(self, inst: 'instruction.Instruction') -> List[str]:
         text = []
-        for opr in operands:
-            info = handlers.FormatOperandHandlerInfo(opr)
-            text.append(self.formatOperand(info))
+        for opr in inst.operands:
+            info = handlers.FormatOperandHandlerInfo(inst, opr)
+            ret = self.formatOperand(info)
+
+            if isinstance(ret, list):
+                text.extend(ret)
+            else:
+                text.append(ret)
 
         return text
 

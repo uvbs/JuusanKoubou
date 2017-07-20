@@ -17,12 +17,25 @@ class Disassembler:
     def __init__(self, instructionTable: InstructionTable):
         self.instructionTable   = instructionTable      # type: InstructionTable
         self.disassembledBlocks = {}                    # type: Dict[int, CodeBlock]
+        self.allocatedBlocks    = {}                    # type: Dict[int, CodeBlock]
+        self.currentBlock       = None                  # type: CodeBlock
+
+    def createCodeBlock(self, offset: int):
+        block = self.allocatedBlocks.get(offset)
+        if block is None:
+            block = CodeBlock(instructions = [])
+            block.offset = offset
+            block.name = 'loc_%X' % offset
+            self.allocatedBlocks[offset] = block
+
+        return block
 
     def disasmFunction(self, info: DisassembleInfo) -> Function:
         fun = Function()
 
         fun.offset = info.fs.Position
         fun.block = self.disasmBlock(info)
+        fun.block.name = None
 
         return fun
 
@@ -33,29 +46,37 @@ class Disassembler:
         if block is not None:
             return block
 
-        block = CodeBlock(instructions = [])
-        block.offset = offset
+        block = self.createCodeBlock(offset)
 
         self.disassembledBlocks[offset] = block
+
+        previousBlock = self.currentBlock
+        self.currentBlock = block
 
         while True:
             inst = self.disasmInstruction(info)
 
             block.instructions.append(inst)
 
-            if not inst.flags.startBlock and not inst.flags.endBlock:
-                continue
-
-            for index, branch in enumerate(inst.branches):
-                pos = info.fs.Position
-
-                info.fs.Position = branch.offset
-                inst.branches[index] = self.disasmBlock(info)
-
-                info.fs.Position = pos
-
             if inst.flags.endBlock:
                 break
+
+            if inst.flags.startBlock:
+                block.insertBranch(self.createCodeBlock(info.fs.Position))
+                break
+
+            if info.fs.Position in self.allocatedBlocks:
+                break
+
+        for index, branch in enumerate(block.branches):
+            pos = info.fs.Position
+
+            info.fs.Position = branch.offset
+            block.branches[index] = self.disasmBlock(info)
+
+            info.fs.Position = pos
+
+        self.currentBlock = previousBlock
 
         return block
 
@@ -65,15 +86,16 @@ class Disassembler:
         try:
             opcode = self.instructionTable.readOpCode(info.fs)
         except Exception as e:
-            print('error occur %s @ position %X' % (e, pos))
+            print('error occurred %s @ position %X' % (e, pos))
             raise e
 
         desc = self.instructionTable.getDescriptor(opcode)
 
         handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Disassemble, desc)
 
-        handlerInfo.offset      = pos
-        handlerInfo.disasmInfo  = info
+        handlerInfo.offset          = pos
+        handlerInfo.disasmInfo      = info
+        handlerInfo.disassembler    = self
 
         inst = None
 
@@ -98,7 +120,7 @@ class Disassembler:
         inst = Instruction(desc.opcode)
 
         inst.offset     = info.offset
-        inst.operands   = [self.instructionTable.readOperand(fs, oprdesc) for oprdesc in (desc.operands or [])]
+        inst.operands   = [self.instructionTable.readOperand(info, inst, oprdesc) for oprdesc in (desc.operands or [])]
         inst.size       = fs.Position - inst.offset
         inst.descriptor = desc
         inst.flags      = desc.flags
@@ -111,6 +133,12 @@ class Disassembler:
     def formatBlock(self, block: CodeBlock) -> List[str]:
         text = []
 
+        if block.name:
+            text = [
+                "label('%s')" % block.name,
+                '',
+            ]
+
         for inst in block.instructions:
             t = self.formatInstruction(inst)
             if not inst.flags.argNewLine:
@@ -118,8 +146,16 @@ class Disassembler:
                 continue
 
             text.append('')
-            text.append(',\n'.join(t))
+
+            params = ['%s%s,' % (DefaultIndent, p) for p in t[1:-1]]
+
+            text.append('\n'.join([t[0], *params, t[-1]]))
+
             text.append('')
+
+        for blk in block.branches:
+            text.append('')
+            text.extend(self.formatBlock(blk))
 
         return text
 
@@ -127,6 +163,8 @@ class Disassembler:
         handler = inst.descriptor.handler
         if handler is not None:
             handlerInfo = InstructionHandlerInfo(InstructionHandlerInfo.Action.Format, inst.descriptor)
+
+            handlerInfo.disassembler = self
             handlerInfo.instruction = inst
 
             ret = handler(handlerInfo)
@@ -134,6 +172,10 @@ class Disassembler:
                 return ret
 
         mnemonic = inst.descriptor.mnemonic
-        operands = self.instructionTable.formatAllOperand(inst.operands)
+        operands = self.instructionTable.formatAllOperand(inst)
 
-        return ['%s(%s)' % (mnemonic, ', '.join(operands))]
+        if inst.flags.argNewLine:
+            return ['%s(' % mnemonic, *operands, ')']
+
+        else:
+            return ['%s(%s)' % (mnemonic, ', '.join(operands))]

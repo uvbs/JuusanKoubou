@@ -15,8 +15,12 @@ class ED6FCInstructionTable(InstructionTable):
     def writeOpCode(self, fs: fileio.FileStream, inst: 'Instruction'):
         fs.WriteByte(inst.opcode)
 
-    def readOperand(self, fs: fileio.FileStream, desc: OperandDescriptor) -> 'instruction.Operand':
-        return super().readOperand(fs, desc)
+    def readOperand(self, info: 'handlers.InstructionHandlerInfo', inst: 'instruction.Instruction', desc: OperandDescriptor) -> 'instruction.Operand':
+        opr = super().readOperand(info, inst, desc)
+        if desc.format.type == ED6FCOperandType.Offset:
+            opr.value = info.addBranch(opr.value)
+
+        return opr
 
     def writeOperand(self, fs: fileio.FileStream, operand: 'instruction.Operand'):
         raise NotImplementedError
@@ -27,29 +31,8 @@ for i in ED6FCOperandType:
 for i in TextCtrlCode:
     globals()[i.name] = i
 
-def formatTextObjects(objs: List[TextObject], depth: int = 1) -> List[str]:
-    text = []
-
-    indent = '    ' * depth
-
-    for o in objs:
-        if o.code is None:
-            text.append(repr(o.value))
-            continue
-
-        if o.value is None:
-            text.append(str(o.code))
-            continue
-
-        text.append('(%s, %s)' % (o.code, o.value))
-
-    for i, t in enumerate(text):
-        text[i] = indent + t
-
-    return text
-
 def Handler_If(info: InstructionHandlerInfo):
-    raise NotImplementedError
+    pass
 
 def Handler_Switch(info: InstructionHandlerInfo):
     raise NotImplementedError
@@ -88,15 +71,7 @@ def Handler_51(info: InstructionHandlerInfo):
     raise NotImplementedError
 
 def Handler_AnonymousTalk(info: InstructionHandlerInfo):
-    if info.action != info.Action.Format:
-        return
-
-    inst = info.instruction
-    inst.flags |= Flags.FormatArgNewLine
-
-    ScenaExpression.readExpressions(fileio.FileStream().OpenMemory(b'12345'))
-
-    return ['%s(' % inst.descriptor.mnemonic, *formatTextObjects(inst.operands[0].value), ')']
+    return
 
 def Handler_ChrTalk(info: InstructionHandlerInfo):
     raise NotImplementedError
@@ -118,7 +93,7 @@ def inst(opcode: int, mnemonic: str, operandfmts: str = None, flags: Flags = Fla
 ScenaOpTable = ED6FCInstructionTable([
     inst(0x00,  'ExitThread'),
     inst(0x01,  'Return',                       NoOperand,          Flags.EndBlock),
-    inst(0x02,  'If',                           NoOperand,          Flags.StartBlock,   Handler_If),
+    inst(0x02,  'If',                           'Eo',               Flags.StartBlock,   Handler_If),
     inst(0x03,  'Jump',                         'o',                Flags.Jump),
     inst(0x04,  'Switch',                       NoOperand,          Flags.EndBlock,     Handler_Switch),
     inst(0x05,  'Call',                         'CH'),                                                      # Call(scp index, func index)
@@ -183,8 +158,8 @@ ScenaOpTable = ED6FCInstructionTable([
     inst(0x40,  'OP_40',                        'W'),
     inst(0x41,  'OP_41',                        NoOperand,          Flags.Empty,        Handler_41),
     inst(0x42,  'OP_42',                        'B'),
-    inst(0x43,  'OP_43',                        'WBBW'),
-    inst(0x44,  'OP_44',                        'WB'),
+    inst(0x43,  'BeginChrThread',               'WBBW'),
+    inst(0x44,  'EndChrThread',                 'WB'),
     inst(0x45,  'QueueWorkItem',                NoOperand,          Flags.Empty,        Handler_QueueWorkItem),
     inst(0x46,  'QueueWorkItem2',               NoOperand,          Flags.Empty,        Handler_QueueWorkItem2),
     inst(0x47,  'WaitChrThread',                'WW'),
