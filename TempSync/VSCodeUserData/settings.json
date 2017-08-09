@@ -49,5 +49,5 @@
     },
 
     "clang.executable": "D:/Dev/Clang/bin/clang.exe",
-    "editor.multiCursorModifier": "ctrlCmd"
+    "editor.multiCursorModifier": "alt"
 }
