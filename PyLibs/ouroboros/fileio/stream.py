@@ -1,5 +1,6 @@
 from ..common import *
 from ..otypes.wintypes import *
+from .. import encoding
 import io
 
 _DEFAULT_ENDIAN = '<'
@@ -206,7 +207,8 @@ class FileStream(object):
             return b''
 
         with FileStreamPositionHolder(self):
-            self.Position = offset
+            self.Position += offset
+
             if size == 1:
                 b = self.ReadByte()
             elif size == 2:
@@ -384,6 +386,11 @@ class FileStream(object):
 
     def ReadUTF16(self):
         return _ReadWString(self._stream)
+
+    def ReadVarint(self):
+        val, size = encoding.decodeVarint(self)
+        self.Position += size
+        return val
 
     def WriteBoolean(self, *values):
         return sum([self.WriteByte(bool(b)) for b in values])

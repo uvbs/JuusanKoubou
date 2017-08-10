@@ -13,6 +13,8 @@ class _CaseInsensitiveDict(CaseInsensitiveDict):
     def add(self, key, value):
         self[key] = value
 
+aiohttp.client.ClientRequest.DEFAULT_HEADERS = {}
+
 class _ClientRequest(aiohttp.client.ClientRequest):
     def __init__(self, *args, noQuotoPath = False, **kwargs):
         self.noQuotoPath = noQuotoPath
@@ -113,6 +115,7 @@ class AsyncHttp(object):
         self.session = aiohttp.ClientSession(
                             loop        = self.loop,
                             cookie_jar  = self.cookie_jar,
+                            # version     = aiohttp.http.HttpVersion10,
                             connector   = aiohttp.TCPConnector(loop = self.loop, verify_ssl = verify_ssl),
                         )
 
