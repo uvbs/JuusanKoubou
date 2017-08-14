@@ -1,0 +1,3 @@
+[console_scripts]
+objection = objection.console.cli:cli
+

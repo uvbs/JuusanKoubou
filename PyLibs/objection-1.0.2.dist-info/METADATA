@@ -1,0 +1,28 @@
+Metadata-Version: 2.0
+Name: objection
+Version: 1.0.2
+Summary: Instrumented Mobile Pentest Framework
+Home-page: https://github.com/sensepost/objection
+Author: Leon Jacobs
+Author-email: leon@sensepost.com
+License: CC BY-NC-SA 4.0
+Download-URL: https://github.com/sensepost/objection/archive/1.0.2.tar.gz
+Keywords: mobile,instrumentation,pentest,frida,hook
+Platform: UNKNOWN
+Classifier: Operating System :: OS Independent
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: JavaScript
+Requires-Python: >=3.3
+Requires-Dist: click
+Requires-Dist: delegator.py
+Requires-Dist: frida
+Requires-Dist: jinja2
+Requires-Dist: jsbeautifier
+Requires-Dist: prompt-toolkit
+Requires-Dist: requests
+Requires-Dist: tabulate
+
+UNKNOWN
+
+
