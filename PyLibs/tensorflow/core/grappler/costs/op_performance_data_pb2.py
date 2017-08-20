@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='tensorflow/core/grappler/costs/op_performance_data.proto',
   package='tensorflow',
   syntax='proto3',
-  serialized_pb=_b('\n8tensorflow/core/grappler/costs/op_performance_data.proto\x12\ntensorflow\x1a&tensorflow/core/framework/tensor.proto\x1a,tensorflow/core/framework/tensor_shape.proto\x1a%tensorflow/core/framework/types.proto\x1a*tensorflow/core/framework/attr_value.proto\x1a\x30tensorflow/core/protobuf/device_properties.proto\"\xf6\x02\n\x06OpInfo\x12\n\n\x02op\x18\x01 \x01(\t\x12*\n\x04\x61ttr\x18\x02 \x03(\x0b\x32\x1c.tensorflow.OpInfo.AttrEntry\x12\x33\n\x06inputs\x18\x03 \x03(\x0b\x32#.tensorflow.OpInfo.TensorProperties\x12,\n\x06\x64\x65vice\x18\x04 \x01(\x0b\x32\x1c.tensorflow.DeviceProperties\x1a\x42\n\tAttrEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.tensorflow.AttrValue:\x02\x38\x01\x1a\x8c\x01\n\x10TensorProperties\x12#\n\x05\x64type\x18\x01 \x01(\x0e\x32\x14.tensorflow.DataType\x12+\n\x05shape\x18\x02 \x01(\x0b\x32\x1c.tensorflow.TensorShapeProto\x12&\n\x05value\x18\x03 \x01(\x0b\x32\x17.tensorflow.TensorProto\"\xa7\x03\n\rOpPerformance\x12\x1e\n\x02op\x18\x01 \x01(\x0b\x32\x12.tensorflow.OpInfo\x12\x0c\n\x04node\x18\x05 \x01(\t\x12\x1d\n\x15temporary_memory_size\x18\x02 \x01(\x03\x12\x14\n\x0c\x63ompute_cost\x18\x03 \x01(\x03\x12\x14\n\x0c\x63ompute_time\x18\x06 \x01(\x03\x12\x13\n\x0bmemory_time\x18\x07 \x01(\x03\x12\x1a\n\x12\x63ompute_efficiency\x18\x04 \x01(\x01\x12\x19\n\x11memory_efficiency\x18\x08 \x01(\x01\x12\x35\n\top_memory\x18\t \x01(\x0b\x32\".tensorflow.OpPerformance.OpMemory\x1a\x99\x01\n\x08OpMemory\x12\x15\n\routput_memory\x18\x01 \x03(\x03\x12\x18\n\x10host_temp_memory\x18\x02 \x01(\x03\x12\x1a\n\x12\x64\x65vice_temp_memory\x18\x03 \x01(\x03\x12\x1e\n\x16host_persistent_memory\x18\x04 \x01(\x03\x12 \n\x18\x64\x65vice_persistent_memory\x18\x05 \x01(\x03\"F\n\x11OpPerformanceList\x12\x31\n\x0eop_performance\x18\x01 \x03(\x0b\x32\x19.tensorflow.OpPerformanceB\x03\xf8\x01\x01\x62\x06proto3')
+  serialized_pb=_b('\n8tensorflow/core/grappler/costs/op_performance_data.proto\x12\ntensorflow\x1a&tensorflow/core/framework/tensor.proto\x1a,tensorflow/core/framework/tensor_shape.proto\x1a%tensorflow/core/framework/types.proto\x1a*tensorflow/core/framework/attr_value.proto\x1a\x30tensorflow/core/protobuf/device_properties.proto\"\xac\x03\n\x06OpInfo\x12\n\n\x02op\x18\x01 \x01(\t\x12*\n\x04\x61ttr\x18\x02 \x03(\x0b\x32\x1c.tensorflow.OpInfo.AttrEntry\x12\x33\n\x06inputs\x18\x03 \x03(\x0b\x32#.tensorflow.OpInfo.TensorProperties\x12\x34\n\x07outputs\x18\x05 \x03(\x0b\x32#.tensorflow.OpInfo.TensorProperties\x12,\n\x06\x64\x65vice\x18\x04 \x01(\x0b\x32\x1c.tensorflow.DeviceProperties\x1a\x42\n\tAttrEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12$\n\x05value\x18\x02 \x01(\x0b\x32\x15.tensorflow.AttrValue:\x02\x38\x01\x1a\x8c\x01\n\x10TensorProperties\x12#\n\x05\x64type\x18\x01 \x01(\x0e\x32\x14.tensorflow.DataType\x12+\n\x05shape\x18\x02 \x01(\x0b\x32\x1c.tensorflow.TensorShapeProto\x12&\n\x05value\x18\x03 \x01(\x0b\x32\x17.tensorflow.TensorProto\"\xa7\x03\n\rOpPerformance\x12\x1e\n\x02op\x18\x01 \x01(\x0b\x32\x12.tensorflow.OpInfo\x12\x0c\n\x04node\x18\x05 \x01(\t\x12\x1d\n\x15temporary_memory_size\x18\x02 \x01(\x03\x12\x14\n\x0c\x63ompute_cost\x18\x03 \x01(\x03\x12\x14\n\x0c\x63ompute_time\x18\x06 \x01(\x03\x12\x13\n\x0bmemory_time\x18\x07 \x01(\x03\x12\x1a\n\x12\x63ompute_efficiency\x18\x04 \x01(\x01\x12\x19\n\x11memory_efficiency\x18\x08 \x01(\x01\x12\x35\n\top_memory\x18\t \x01(\x0b\x32\".tensorflow.OpPerformance.OpMemory\x1a\x99\x01\n\x08OpMemory\x12\x15\n\routput_memory\x18\x01 \x03(\x03\x12\x18\n\x10host_temp_memory\x18\x02 \x01(\x03\x12\x1a\n\x12\x64\x65vice_temp_memory\x18\x03 \x01(\x03\x12\x1e\n\x16host_persistent_memory\x18\x04 \x01(\x03\x12 \n\x18\x64\x65vice_persistent_memory\x18\x05 \x01(\x03\"F\n\x11OpPerformanceList\x12\x31\n\x0eop_performance\x18\x01 \x03(\x0b\x32\x19.tensorflow.OpPerformanceB\x03\xf8\x01\x01\x62\x06proto3')
   ,
   dependencies=[tensorflow_dot_core_dot_framework_dot_tensor__pb2.DESCRIPTOR,tensorflow_dot_core_dot_framework_dot_tensor__shape__pb2.DESCRIPTOR,tensorflow_dot_core_dot_framework_dot_types__pb2.DESCRIPTOR,tensorflow_dot_core_dot_framework_dot_attr__value__pb2.DESCRIPTOR,tensorflow_dot_core_dot_protobuf_dot_device__properties__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -65,8 +65,8 @@ _OPINFO_ATTRENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=457,
-  serialized_end=523,
+  serialized_start=511,
+  serialized_end=577,
 )
 
 _OPINFO_TENSORPROPERTIES = _descriptor.Descriptor(
@@ -109,8 +109,8 @@ _OPINFO_TENSORPROPERTIES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=526,
-  serialized_end=666,
+  serialized_start=580,
+  serialized_end=720,
 )
 
 _OPINFO = _descriptor.Descriptor(
@@ -142,7 +142,14 @@ _OPINFO = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='device', full_name='tensorflow.OpInfo.device', index=3,
+      name='outputs', full_name='tensorflow.OpInfo.outputs', index=3,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='device', full_name='tensorflow.OpInfo.device', index=4,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -161,7 +168,7 @@ _OPINFO = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=292,
-  serialized_end=666,
+  serialized_end=720,
 )
 
 
@@ -219,8 +226,8 @@ _OPPERFORMANCE_OPMEMORY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=939,
-  serialized_end=1092,
+  serialized_start=993,
+  serialized_end=1146,
 )
 
 _OPPERFORMANCE = _descriptor.Descriptor(
@@ -305,8 +312,8 @@ _OPPERFORMANCE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=669,
-  serialized_end=1092,
+  serialized_start=723,
+  serialized_end=1146,
 )
 
 
@@ -336,8 +343,8 @@ _OPPERFORMANCELIST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1094,
-  serialized_end=1164,
+  serialized_start=1148,
+  serialized_end=1218,
 )
 
 _OPINFO_ATTRENTRY.fields_by_name['value'].message_type = tensorflow_dot_core_dot_framework_dot_attr__value__pb2._ATTRVALUE
@@ -348,6 +355,7 @@ _OPINFO_TENSORPROPERTIES.fields_by_name['value'].message_type = tensorflow_dot_c
 _OPINFO_TENSORPROPERTIES.containing_type = _OPINFO
 _OPINFO.fields_by_name['attr'].message_type = _OPINFO_ATTRENTRY
 _OPINFO.fields_by_name['inputs'].message_type = _OPINFO_TENSORPROPERTIES
+_OPINFO.fields_by_name['outputs'].message_type = _OPINFO_TENSORPROPERTIES
 _OPINFO.fields_by_name['device'].message_type = tensorflow_dot_core_dot_protobuf_dot_device__properties__pb2._DEVICEPROPERTIES
 _OPPERFORMANCE_OPMEMORY.containing_type = _OPPERFORMANCE
 _OPPERFORMANCE.fields_by_name['op'].message_type = _OPINFO

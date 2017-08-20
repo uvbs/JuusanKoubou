@@ -23,7 +23,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='tensorflow/core/protobuf/master.proto',
   package='tensorflow',
   syntax='proto3',
-  serialized_pb=_b('\n%tensorflow/core/protobuf/master.proto\x12\ntensorflow\x1a\x31tensorflow/core/framework/device_attributes.proto\x1a%tensorflow/core/framework/graph.proto\x1a%tensorflow/core/protobuf/config.proto\x1a+tensorflow/core/protobuf/named_tensor.proto\"x\n\x14\x43reateSessionRequest\x12\'\n\tgraph_def\x18\x01 \x01(\x0b\x32\x14.tensorflow.GraphDef\x12\'\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.tensorflow.ConfigProto\x12\x0e\n\x06target\x18\x03 \x01(\t\"F\n\x15\x43reateSessionResponse\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12\x15\n\rgraph_version\x18\x02 \x01(\x03\"v\n\x14\x45xtendSessionRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12\'\n\tgraph_def\x18\x02 \x01(\x0b\x32\x14.tensorflow.GraphDef\x12\x1d\n\x15\x63urrent_graph_version\x18\x03 \x01(\x03\"2\n\x15\x45xtendSessionResponse\x12\x19\n\x11new_graph_version\x18\x04 \x01(\x03\"\xb8\x01\n\x0eRunStepRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12*\n\x04\x66\x65\x65\x64\x18\x02 \x03(\x0b\x32\x1c.tensorflow.NamedTensorProto\x12\r\n\x05\x66\x65tch\x18\x03 \x03(\t\x12\x0e\n\x06target\x18\x04 \x03(\t\x12\'\n\x07options\x18\x05 \x01(\x0b\x32\x16.tensorflow.RunOptions\x12\x1a\n\x12partial_run_handle\x18\x06 \x01(\t\"j\n\x0fRunStepResponse\x12,\n\x06tensor\x18\x01 \x03(\x0b\x32\x1c.tensorflow.NamedTensorProto\x12)\n\x08metadata\x18\x02 \x01(\x0b\x32\x17.tensorflow.RunMetadata\"]\n\x16PartialRunSetupRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12\x0c\n\x04\x66\x65\x65\x64\x18\x02 \x03(\t\x12\r\n\x05\x66\x65tch\x18\x03 \x03(\t\x12\x0e\n\x06target\x18\x04 \x03(\t\"5\n\x17PartialRunSetupResponse\x12\x1a\n\x12partial_run_handle\x18\x01 \x01(\t\"-\n\x13\x43loseSessionRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\"\x16\n\x14\x43loseSessionResponse\"9\n\x0cResetRequest\x12\x11\n\tcontainer\x18\x01 \x03(\t\x12\x16\n\x0e\x64\x65vice_filters\x18\x02 \x03(\t\"\x0f\n\rResetResponse\"\x14\n\x12ListDevicesRequest\"~\n\x13ListDevicesResponse\x12\x32\n\x0clocal_device\x18\x01 \x03(\x0b\x32\x1c.tensorflow.DeviceAttributes\x12\x33\n\rremote_device\x18\x02 \x03(\x0b\x32\x1c.tensorflow.DeviceAttributesB;\n\x1aorg.tensorflow.distruntimeB\x18\x44istributedRuntimeProtosP\x01\xf8\x01\x01\x62\x06proto3')
+  serialized_pb=_b('\n%tensorflow/core/protobuf/master.proto\x12\ntensorflow\x1a\x31tensorflow/core/framework/device_attributes.proto\x1a%tensorflow/core/framework/graph.proto\x1a%tensorflow/core/protobuf/config.proto\x1a+tensorflow/core/protobuf/named_tensor.proto\"x\n\x14\x43reateSessionRequest\x12\'\n\tgraph_def\x18\x01 \x01(\x0b\x32\x14.tensorflow.GraphDef\x12\'\n\x06\x63onfig\x18\x02 \x01(\x0b\x32\x17.tensorflow.ConfigProto\x12\x0e\n\x06target\x18\x03 \x01(\t\"F\n\x15\x43reateSessionResponse\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12\x15\n\rgraph_version\x18\x02 \x01(\x03\"v\n\x14\x45xtendSessionRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12\'\n\tgraph_def\x18\x02 \x01(\x0b\x32\x14.tensorflow.GraphDef\x12\x1d\n\x15\x63urrent_graph_version\x18\x03 \x01(\x03\"2\n\x15\x45xtendSessionResponse\x12\x19\n\x11new_graph_version\x18\x04 \x01(\x03\"\xb8\x01\n\x0eRunStepRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12*\n\x04\x66\x65\x65\x64\x18\x02 \x03(\x0b\x32\x1c.tensorflow.NamedTensorProto\x12\r\n\x05\x66\x65tch\x18\x03 \x03(\t\x12\x0e\n\x06target\x18\x04 \x03(\t\x12\'\n\x07options\x18\x05 \x01(\x0b\x32\x16.tensorflow.RunOptions\x12\x1a\n\x12partial_run_handle\x18\x06 \x01(\t\"j\n\x0fRunStepResponse\x12,\n\x06tensor\x18\x01 \x03(\x0b\x32\x1c.tensorflow.NamedTensorProto\x12)\n\x08metadata\x18\x02 \x01(\x0b\x32\x17.tensorflow.RunMetadata\"]\n\x16PartialRunSetupRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\x12\x0c\n\x04\x66\x65\x65\x64\x18\x02 \x03(\t\x12\r\n\x05\x66\x65tch\x18\x03 \x03(\t\x12\x0e\n\x06target\x18\x04 \x03(\t\"5\n\x17PartialRunSetupResponse\x12\x1a\n\x12partial_run_handle\x18\x01 \x01(\t\"-\n\x13\x43loseSessionRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\"\x16\n\x14\x43loseSessionResponse\"9\n\x0cResetRequest\x12\x11\n\tcontainer\x18\x01 \x03(\t\x12\x16\n\x0e\x64\x65vice_filters\x18\x02 \x03(\t\"\x0f\n\rResetResponse\",\n\x12ListDevicesRequest\x12\x16\n\x0esession_handle\x18\x01 \x01(\t\"~\n\x13ListDevicesResponse\x12\x32\n\x0clocal_device\x18\x01 \x03(\x0b\x32\x1c.tensorflow.DeviceAttributes\x12\x33\n\rremote_device\x18\x02 \x03(\x0b\x32\x1c.tensorflow.DeviceAttributesB;\n\x1aorg.tensorflow.distruntimeB\x18\x44istributedRuntimeProtosP\x01\xf8\x01\x01\x62\x06proto3')
   ,
   dependencies=[tensorflow_dot_core_dot_framework_dot_device__attributes__pb2.DESCRIPTOR,tensorflow_dot_core_dot_framework_dot_graph__pb2.DESCRIPTOR,tensorflow_dot_core_dot_protobuf_dot_config__pb2.DESCRIPTOR,tensorflow_dot_core_dot_protobuf_dot_named__tensor__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -501,6 +501,13 @@ _LISTDEVICESREQUEST = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
+    _descriptor.FieldDescriptor(
+      name='session_handle', full_name='tensorflow.ListDevicesRequest.session_handle', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -514,7 +521,7 @@ _LISTDEVICESREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1185,
-  serialized_end=1205,
+  serialized_end=1229,
 )
 
 
@@ -551,8 +558,8 @@ _LISTDEVICESRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1207,
-  serialized_end=1333,
+  serialized_start=1231,
+  serialized_end=1357,
 )
 
 _CREATESESSIONREQUEST.fields_by_name['graph_def'].message_type = tensorflow_dot_core_dot_framework_dot_graph__pb2._GRAPHDEF
