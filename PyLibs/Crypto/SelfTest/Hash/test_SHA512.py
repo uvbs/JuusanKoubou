@@ -24,8 +24,6 @@
 
 """Self-test suite for Crypto.Hash.SHA512"""
 
-__revision__ = "$Id$"
-
 # Test vectors from various sources
 # This is a list of (expected_result, input[, description]) tuples.
 test_data = [
@@ -41,7 +39,7 @@ test_data = [
 
     # Taken from http://de.wikipedia.org/wiki/Secure_Hash_Algorithm
     ('cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', ''),
-    
+
     ('af9ed2de700433b803240a552b41b5a472a6ef3fe1431a722b2063c75e9f07451f67a28e37d09cde769424c96aea6f8971389db9e1993d6c565c3c71b855723c', 'Franz jagt im komplett verwahrlosten Taxi quer durch Bayern'),
 ]
 
@@ -50,7 +48,7 @@ def get_tests(config={}):
     from .common import make_hash_tests
     return make_hash_tests(SHA512, "SHA512", test_data,
         digest_size=64,
-        oid="\x06\x09\x60\x86\x48\x01\x65\x03\x04\x02\x03")
+        oid="2.16.840.1.101.3.4.2.3")
 
 if __name__ == '__main__':
     import unittest

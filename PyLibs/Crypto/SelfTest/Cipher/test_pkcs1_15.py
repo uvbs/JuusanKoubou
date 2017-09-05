@@ -20,16 +20,14 @@
 # SOFTWARE.
 # ===================================================================
 
-__revision__ = "$Id$"
-
 import unittest
-import sys
 
 from Crypto.PublicKey import RSA
 from Crypto.SelfTest.st_common import list_test_cases, a2b_hex, b2a_hex
 from Crypto import Random
 from Crypto.Cipher import PKCS1_v1_5 as PKCS
 from Crypto.Util.py3compat import *
+from Crypto.Util.number import bytes_to_long, long_to_bytes
 
 def rws(t):
     """Remove white spaces, tabs, and new lines from a string"""
@@ -113,12 +111,11 @@ HKukWBcq9f/UOmS0oEhai/6g+Uf7VHJdWaeO5LzuvwU=
                                 self.data = data
                                 self.idx = 0
                             def __call__(self, N):
-                                r = self.data[self.idx:N]
+                                r = self.data[self.idx:self.idx+N]
                                 self.idx += N
                                 return r
                         # The real test
-                        key._randfunc = randGen(t2b(test[3]))
-                        cipher = PKCS.new(key)
+                        cipher = PKCS.new(key, randfunc=randGen(t2b(test[3])))
                         ct = cipher.encrypt(b(test[1]))
                         self.assertEqual(ct, t2b(test[2]))
 
@@ -147,8 +144,9 @@ HKukWBcq9f/UOmS0oEhai/6g+Uf7VHJdWaeO5LzuvwU=
                 # Verify that decryption fails if there are less then 8 non-zero padding
                 # bytes
                 pt = b('\x00\x02' + '\xFF'*7 + '\x00' + '\x45'*118)
-                ct = self.key1024.encrypt(pt, 0)[0]
-                ct = b('\x00'*(128-len(ct))) + ct
+                pt_int = bytes_to_long(pt)
+                ct_int = self.key1024._encrypt(pt_int)
+                ct = long_to_bytes(ct_int, 128)
                 self.assertEqual("---", cipher.decrypt(ct, "---"))
 
         def testEncryptVerify1(self):
