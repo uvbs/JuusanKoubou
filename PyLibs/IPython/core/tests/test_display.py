@@ -22,12 +22,23 @@ def test_image_size():
     thisurl = 'http://www.google.fr/images/srpr/logo3w.png'
     img = display.Image(url=thisurl, width=200, height=200)
     nt.assert_equal(u'<img src="%s" width="200" height="200"/>' % (thisurl), img._repr_html_())
+    img = display.Image(url=thisurl, metadata={'width':200, 'height':200})
+    nt.assert_equal(u'<img src="%s" width="200" height="200"/>' % (thisurl), img._repr_html_())
     img = display.Image(url=thisurl, width=200)
     nt.assert_equal(u'<img src="%s" width="200"/>' % (thisurl), img._repr_html_())
     img = display.Image(url=thisurl)
     nt.assert_equal(u'<img src="%s"/>' % (thisurl), img._repr_html_())
     img = display.Image(url=thisurl, unconfined=True)
     nt.assert_equal(u'<img src="%s" class="unconfined"/>' % (thisurl), img._repr_html_())
+
+
+def test_image_mimes():
+    fmt = get_ipython().display_formatter.format
+    for format in display.Image._ACCEPTABLE_EMBEDDINGS:
+        mime = display.Image._MIMETYPES[format]
+        img = display.Image(b'garbage', format=format)
+        data, metadata = fmt(img)
+        nt.assert_equal(sorted(data), sorted([mime, 'text/plain']))
 
 
 def test_geojson():
@@ -75,7 +86,7 @@ def test_base64image():
 def test_image_filename_defaults():
     '''test format constraint, and validity of jpeg and png'''
     tpath = ipath.get_ipython_package_dir()
-    nt.assert_raises(ValueError, display.Image, filename=os.path.join(tpath, 'testing/tests/badformat.gif'),
+    nt.assert_raises(ValueError, display.Image, filename=os.path.join(tpath, 'testing/tests/badformat.zip'),
                      embed=True)
     nt.assert_raises(ValueError, display.Image)
     nt.assert_raises(ValueError, display.Image, data='this is not an image', format='badformat', embed=True)
@@ -160,6 +171,13 @@ def test_display_available():
     with AssertNotPrints('NameError'):
         ip.run_cell('display')
 
+def test_textdisplayobj_pretty_repr():
+     p = display.Pretty("This is a simple test")
+     nt.assert_equal(repr(p), '<IPython.core.display.Pretty object>')
+     nt.assert_equal(p.data, 'This is a simple test')
+
+     p._show_mem_addr = True
+     nt.assert_equal(repr(p), object.__repr__(p))
 
 def test_displayobject_repr():
     h = display.HTML('<br />')
@@ -175,6 +193,13 @@ def test_displayobject_repr():
     nt.assert_equal(repr(j), object.__repr__(j))
     j._show_mem_addr = False
     nt.assert_equal(repr(j), '<IPython.core.display.Javascript object>')
+
+def test_progress():
+    p = display.ProgressBar(10)
+    nt.assert_true('0/10' in repr(p))
+    p.html_width = '100%'
+    p.progress = 5
+    nt.assert_equal(p._repr_html_(), "<progress style='width:100%' max='10' value='5'></progress>")
 
 def test_json():
     d = {'a': 5}
@@ -352,3 +377,4 @@ def test_display_handle():
         },
         'update': True,
     })
+

@@ -34,6 +34,7 @@ import platform
 import collections
 import plistlib
 import email.parser
+import errno
 import tempfile
 import textwrap
 import itertools
@@ -79,6 +80,11 @@ __import__('pkg_resources.extern.packaging.markers')
 
 if (3, 0) < sys.version_info < (3, 3):
     raise RuntimeError("Python 3.3 or later is required")
+
+if six.PY2:
+    # Those builtin exceptions are only defined in Python 3
+    PermissionError = None
+    NotADirectoryError = None
 
 # declare some globals that will be defined later to
 # satisfy the linters.
@@ -852,7 +858,10 @@ class WorkingSet(object):
                             # distribution
                             env = Environment([])
                             ws = WorkingSet([])
-                    dist = best[req.key] = env.best_match(req, ws, installer)
+                    dist = best[req.key] = env.best_match(
+                        req, ws, installer,
+                        replace_conflicting=replace_conflicting
+                    )
                     if dist is None:
                         requirers = required_by.get(req, None)
                         raise DistributionNotFound(req, requirers)
@@ -1104,7 +1113,7 @@ class Environment(object):
                 dists.append(dist)
                 dists.sort(key=operator.attrgetter('hashcmp'), reverse=True)
 
-    def best_match(self, req, working_set, installer=None):
+    def best_match(self, req, working_set, installer=None, replace_conflicting=False):
         """Find distribution best matching `req` and usable on `working_set`
 
         This calls the ``find(req)`` method of the `working_set` to see if a
@@ -1117,7 +1126,12 @@ class Environment(object):
         calling the environment's ``obtain(req, installer)`` method will be
         returned.
         """
-        dist = working_set.find(req)
+        try:
+            dist = working_set.find(req)
+        except VersionConflict:
+            if not replace_conflicting:
+                raise
+            dist = None
         if dist is not None:
             return dist
         for dist in self[req.key]:
@@ -2008,46 +2022,123 @@ def find_on_path(importer, path_item, only=False):
     """Yield distributions accessible on a sys.path directory"""
     path_item = _normalize_cached(path_item)
 
-    if os.path.isdir(path_item) and os.access(path_item, os.R_OK):
-        if _is_unpacked_egg(path_item):
-            yield Distribution.from_filename(
-                path_item, metadata=PathMetadata(
-                    path_item, os.path.join(path_item, 'EGG-INFO')
-                )
+    if _is_unpacked_egg(path_item):
+        yield Distribution.from_filename(
+            path_item, metadata=PathMetadata(
+                path_item, os.path.join(path_item, 'EGG-INFO')
             )
-        else:
-            # scan for .egg and .egg-info in directory
-            path_item_entries = _by_version_descending(os.listdir(path_item))
-            for entry in path_item_entries:
-                lower = entry.lower()
-                if lower.endswith('.egg-info') or lower.endswith('.dist-info'):
-                    fullpath = os.path.join(path_item, entry)
-                    if os.path.isdir(fullpath):
-                        # egg-info directory, allow getting metadata
-                        if len(os.listdir(fullpath)) == 0:
-                            # Empty egg directory, skip.
-                            continue
-                        metadata = PathMetadata(path_item, fullpath)
-                    else:
-                        metadata = FileMetadata(fullpath)
-                    yield Distribution.from_location(
-                        path_item, entry, metadata, precedence=DEVELOP_DIST
-                    )
-                elif not only and _is_egg_path(entry):
-                    dists = find_distributions(os.path.join(path_item, entry))
-                    for dist in dists:
-                        yield dist
-                elif not only and lower.endswith('.egg-link'):
-                    with open(os.path.join(path_item, entry)) as entry_file:
-                        entry_lines = entry_file.readlines()
-                    for line in entry_lines:
-                        if not line.strip():
-                            continue
-                        path = os.path.join(path_item, line.rstrip())
-                        dists = find_distributions(path)
-                        for item in dists:
-                            yield item
-                        break
+        )
+        return
+
+    entries = safe_listdir(path_item)
+
+    # for performance, before sorting by version,
+    # screen entries for only those that will yield
+    # distributions
+    filtered = (
+        entry
+        for entry in entries
+        if dist_factory(path_item, entry, only)
+    )
+
+    # scan for .egg and .egg-info in directory
+    path_item_entries = _by_version_descending(filtered)
+    for entry in path_item_entries:
+        fullpath = os.path.join(path_item, entry)
+        factory = dist_factory(path_item, entry, only)
+        for dist in factory(fullpath):
+            yield dist
+
+
+def dist_factory(path_item, entry, only):
+    """
+    Return a dist_factory for a path_item and entry
+    """
+    lower = entry.lower()
+    is_meta = any(map(lower.endswith, ('.egg-info', '.dist-info')))
+    return (
+        distributions_from_metadata
+        if is_meta else
+        find_distributions
+        if not only and _is_egg_path(entry) else
+        resolve_egg_link
+        if not only and lower.endswith('.egg-link') else
+        NoDists()
+    )
+
+
+class NoDists:
+    """
+    >>> bool(NoDists())
+    False
+
+    >>> list(NoDists()('anything'))
+    []
+    """
+    def __bool__(self):
+        return False
+    if six.PY2:
+        __nonzero__ = __bool__
+
+    def __call__(self, fullpath):
+        return iter(())
+
+
+def safe_listdir(path):
+    """
+    Attempt to list contents of path, but suppress some exceptions.
+    """
+    try:
+        return os.listdir(path)
+    except (PermissionError, NotADirectoryError):
+        pass
+    except OSError as e:
+        # Ignore the directory if does not exist, not a directory or
+        # permission denied
+        ignorable = (
+            e.errno in (errno.ENOTDIR, errno.EACCES, errno.ENOENT)
+            # Python 2 on Windows needs to be handled this way :(
+            or getattr(e, "winerror", None) == 267
+        )
+        if not ignorable:
+            raise
+    return ()
+
+
+def distributions_from_metadata(path):
+    root = os.path.dirname(path)
+    if os.path.isdir(path):
+        if len(os.listdir(path)) == 0:
+            # empty metadata dir; skip
+            return
+        metadata = PathMetadata(root, path)
+    else:
+        metadata = FileMetadata(path)
+    entry = os.path.basename(path)
+    yield Distribution.from_location(
+        root, entry, metadata, precedence=DEVELOP_DIST,
+    )
+
+
+def non_empty_lines(path):
+    """
+    Yield non-empty lines from file at path
+    """
+    return (line.rstrip() for line in open(path) if line.strip())
+
+
+def resolve_egg_link(path):
+    """
+    Given a path to an .egg-link, resolve distributions
+    present in the referenced path.
+    """
+    referenced_paths = non_empty_lines(path)
+    resolved_paths = (
+        os.path.join(os.path.dirname(path), ref)
+        for ref in referenced_paths
+    )
+    dist_groups = map(find_distributions, resolved_paths)
+    return next(dist_groups, ())
 
 
 register_finder(pkgutil.ImpImporter, find_on_path)
@@ -2225,9 +2316,7 @@ def _is_egg_path(path):
     """
     Determine if given path appears to be an egg.
     """
-    return (
-        path.lower().endswith('.egg')
-    )
+    return path.lower().endswith('.egg')
 
 
 def _is_unpacked_egg(path):

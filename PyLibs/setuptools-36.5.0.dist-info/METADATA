@@ -1,11 +1,12 @@
 Metadata-Version: 2.0
 Name: setuptools
-Version: 36.2.7
+Version: 36.5.0
 Summary: Easily download, build, install, upgrade, and uninstall Python packages
 Home-page: https://github.com/pypa/setuptools
 Author: Python Packaging Authority
 Author-email: distutils-sig@python.org
 License: UNKNOWN
+Description-Content-Type: text/x-rst; charset=UTF-8
 Keywords: CPAN PyPI distutils eggs package management
 Platform: UNKNOWN
 Classifier: Development Status :: 5 - Production/Stable
@@ -30,8 +31,19 @@ Requires-Dist: certifi (==2016.9.26); extra == 'certs'
 Provides-Extra: ssl
 Requires-Dist: wincertstore (==0.2); sys_platform=='win32' and extra == 'ssl'
 
+.. image:: https://img.shields.io/pypi/v/setuptools.svg
+   :target: https://pypi.org/project/setuptools
+
 .. image:: https://readthedocs.org/projects/setuptools/badge/?version=latest
     :target: https://setuptools.readthedocs.io
+
+.. image:: https://img.shields.io/travis/pypa/setuptools/master.svg?label=Linux%20build%20%40%20Travis%20CI
+   :target: http://travis-ci.org/pypa/setuptools
+
+.. image:: https://img.shields.io/appveyor/ci/jaraco/setuptools/master.svg?label=Windows%20build%20%40%20Appveyor
+   :target: https://ci.appveyor.com/project/jaraco/setuptools/branch/master
+
+.. image:: https://img.shields.io/pypi/pyversions/setuptools.svg
 
 See the `Installation Instructions
 <https://packaging.python.org/installing/>`_ in the Python Packaging

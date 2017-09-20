@@ -335,6 +335,18 @@ def test_jedi():
 
     yield _test_not_complete, 'does not mix types', 'a=(1,"foo");a[0].', 'capitalize'
 
+def test_completion_have_signature():
+    """
+    Lets make sure jedi is capable of pulling out the signature of the function we are completing.
+    """
+    ip = get_ipython()
+    with provisionalcompleter():
+        completions = ip.Completer.completions('ope', 3)
+        c = next(completions)  # should be `open`
+    assert 'file' in c.signature, "Signature of function was not found by completer"
+    assert 'encoding' in c.signature, "Signature of function was not found by completer"
+
+
 def test_deduplicate_completions():
     """
     Test that completions are correctly deduplicated (even if ranges are not the same)
@@ -577,6 +589,24 @@ def test_magic_completion_shadowing():
     text, matches = c.complete("mat")
     nt.assert_equal(matches, ["%matplotlib"])
 
+def test_magic_completion_shadowing_explicit():
+    """
+    If the user try to complete a shadowed magic, and explicit % start should
+    still return the completions.
+    """
+    ip = get_ipython()
+    c = ip.Completer
+
+    # Before importing matplotlib, %matplotlib magic should be the only option.
+    text, matches = c.complete("%mat")
+    nt.assert_equal(matches, ["%matplotlib"])
+
+    ip.run_cell("matplotlib = 1")
+
+    # After removing matplotlib from namespace, the magic should still be
+    # the only option.
+    text, matches = c.complete("%mat")
+    nt.assert_equal(matches, ["%matplotlib"])
 
 def test_magic_config():
     ip = get_ipython()
@@ -615,6 +645,8 @@ def test_magic_color():
     s, matches = c.complete(None, 'colo')
     nt.assert_in('%colors', matches)
     s, matches = c.complete(None, 'colo')
+    nt.assert_not_in('NoColor', matches)
+    s, matches = c.complete(None, '%colors')  # No trailing space
     nt.assert_not_in('NoColor', matches)
     s, matches = c.complete(None, 'colors ')
     nt.assert_in('NoColor', matches)

@@ -74,6 +74,35 @@ def test_extract_symbols_raises_exception_with_non_python_code():
     with nt.assert_raises(SyntaxError):
         code.extract_symbols(source, "hello")
 
+
+def test_magic_not_found():
+    # magic not found raises UsageError
+    with nt.assert_raises(UsageError):
+        _ip.magic('doesntexist')
+
+    # ensure result isn't success when a magic isn't found
+    result = _ip.run_cell('%doesntexist')
+    assert isinstance(result.error_in_exec, UsageError)
+
+
+def test_cell_magic_not_found():
+    # magic not found raises UsageError
+    with nt.assert_raises(UsageError):
+        _ip.run_cell_magic('doesntexist', 'line', 'cell')
+
+    # ensure result isn't success when a magic isn't found
+    result = _ip.run_cell('%%doesntexist')
+    assert isinstance(result.error_in_exec, UsageError)
+
+
+def test_magic_error_status():
+    def fail(shell):
+        1/0
+    _ip.register_magic_function(fail)
+    result = _ip.run_cell('%fail')
+    assert isinstance(result.error_in_exec, ZeroDivisionError)
+
+
 def test_config():
     """ test that config magic does not raise
     can happen if Configurable init is moved too early into
@@ -510,16 +539,16 @@ def doctest_precision():
     In [1]: f = get_ipython().display_formatter.formatters['text/plain']
     
     In [2]: %precision 5
-    Out[2]: {u}'%.5f'
+    Out[2]: '%.5f'
     
     In [3]: f.float_format
-    Out[3]: {u}'%.5f'
+    Out[3]: '%.5f'
     
     In [4]: %precision %e
-    Out[4]: {u}'%e'
+    Out[4]: '%e'
     
     In [5]: f(3.1415927)
-    Out[5]: {u}'3.141593e+00'
+    Out[5]: '3.141593e+00'
     """
 
 def test_psearch():
@@ -575,6 +604,10 @@ def test_timeit_return_quiet():
     with tt.AssertNotPrints("loops"):
         res = _ip.run_line_magic('timeit', '-n1 -r1 -q -o 1')
     assert (res is not None)
+
+def test_timeit_invalid_return():
+    with nt.assert_raises_regex(SyntaxError, "outside function"):
+        _ip.run_line_magic('timeit', 'return')
 
 @dec.skipif(execution.profile is None)
 def test_prun_special_syntax():

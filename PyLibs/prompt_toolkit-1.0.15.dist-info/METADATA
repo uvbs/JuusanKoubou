@@ -1,3 +1,28 @@
+Metadata-Version: 2.0
+Name: prompt-toolkit
+Version: 1.0.15
+Summary: Library for building powerful interactive command lines in Python
+Home-page: https://github.com/jonathanslenders/python-prompt-toolkit
+Author: Jonathan Slenders
+Author-email: UNKNOWN
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development
+Requires-Dist: six (>=1.9.0)
+Requires-Dist: wcwidth
+
 Python Prompt Toolkit
 =====================
 
@@ -129,6 +154,7 @@ Shells:
 - `http-prompt <https://github.com/eliangcs/http-prompt>`_: An interactive command-line HTTP client.
 - `coconut <http://coconut-lang.org/>`_: Functional programming in Python.
 - `Ergonomica <https://ergonomica.github.io/>`_: A Bash alternative written in Python.
+- `Kube-shell <https://github.com/cloudnativelabs/kube-shell>`_: Kubernetes shell: An integrated shell for working with the Kubernetes CLI
 
 Full screen applications:
 

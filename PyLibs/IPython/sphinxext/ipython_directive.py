@@ -138,7 +138,7 @@ from io import StringIO
 
 # Third-party
 from docutils.parsers.rst import directives
-from sphinx.util.compat import Directive
+from docutils.parsers.rst import Directive
 
 # Our own
 from traitlets.config import Config
@@ -283,7 +283,7 @@ class EmbeddedSphinxShell(object):
         profile = ProfileDir.create_profile_dir(pdir)
 
         # Create and initialize global ipython, but don't start its mainloop.
-        # This will persist across different EmbededSphinxShell instances.
+        # This will persist across different EmbeddedSphinxShell instances.
         IP = InteractiveShell.instance(config=config, profile_dir=profile)
         atexit.register(self.cleanup)
 

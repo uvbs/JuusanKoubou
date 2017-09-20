@@ -79,6 +79,9 @@ from warnings import warn
 from logging import error
 import IPython.core.hooks
 
+from typing import List as ListType
+from ast import AST
+
 # NoOpContext is deprecated, but ipykernel imports it from here.
 # See https://github.com/ipython/ipykernel/issues/157
 from IPython.utils.contexts import NoOpContext
@@ -101,6 +104,13 @@ class ProvisionalWarning(DeprecationWarning):
     Warning class for unstable features
     """
     pass
+
+if sys.version_info > (3,6):
+    _assign_nodes         = (ast.AugAssign, ast.AnnAssign, ast.Assign)
+    _single_targets_nodes = (ast.AugAssign, ast.AnnAssign)
+else:
+    _assign_nodes         = (ast.AugAssign, ast.Assign )
+    _single_targets_nodes = (ast.AugAssign, )
 
 #-----------------------------------------------------------------------------
 # Globals
@@ -376,11 +386,12 @@ class InteractiveShell(SingletonConfigurable):
         """
     ).tag(config=True)
 
-    ast_node_interactivity = Enum(['all', 'last', 'last_expr', 'none'],
+    ast_node_interactivity = Enum(['all', 'last', 'last_expr', 'none', 'last_expr_or_assign'],
                                   default_value='last_expr',
                                   help="""
-        'all', 'last', 'last_expr' or 'none', specifying which nodes should be
-        run interactively (displaying output from expressions)."""
+        'all', 'last', 'last_expr' or 'none', 'last_expr_or_assign' specifying
+        which nodes should be run interactively (displaying output from expressions).
+        """
     ).tag(config=True)
 
     # TODO: this part of prompt management should be moved to the frontends.
@@ -419,6 +430,8 @@ class InteractiveShell(SingletonConfigurable):
     pylab_gui_select = None
 
     last_execution_succeeded = Bool(True, help='Did last executed command succeeded')
+
+    last_execution_result = Instance('IPython.core.interactiveshell.ExecutionResult', help='Result of executing the last command', allow_none=True)
 
     def __init__(self, ipython_dir=None, profile_dir=None,
                  user_module=None, user_ns=None,
@@ -622,7 +635,8 @@ class InteractiveShell(SingletonConfigurable):
 
         self.builtin_trap = BuiltinTrap(shell=self)
 
-    def init_inspector(self):
+    @observe('colors')
+    def init_inspector(self, changes=None):
         # Object inspector
         self.inspector = oinspect.Inspector(oinspect.InspectColors,
                                             PyColorize.ANSICodeColors,
@@ -1200,6 +1214,10 @@ class InteractiveShell(SingletonConfigurable):
         if new_session:
             self.execution_count = 1
 
+        # Reset last execution result
+        self.last_execution_succeeded = True
+        self.last_execution_result = None
+        
         # Flush cached output items
         if self.displayhook.do_full_cache:
             self.displayhook.flush()
@@ -1265,6 +1283,10 @@ class InteractiveShell(SingletonConfigurable):
                 to_delete = [n for n, o in ns.items() if o is obj]
                 for name in to_delete:
                     del ns[name]
+
+            # Ensure it is removed from the last execution result
+            if self.last_execution_result.result is obj:
+                self.last_execution_result = None
 
             # displayhook keeps extra references, but not in a dictionary
             for name in ('_', '__', '___'):
@@ -2025,7 +2047,7 @@ class InteractiveShell(SingletonConfigurable):
         # FIXME: Move the color initialization to the DisplayHook, which
         # should be split into a prompt manager and displayhook. We probably
         # even need a centralize colors management object.
-        self.magic('colors %s' % self.colors)
+        self.run_line_magic('colors', self.colors)
     
     # Defined here so that it's included in the documentation
     @functools.wraps(magic.MagicsManager.register_function)
@@ -2033,7 +2055,7 @@ class InteractiveShell(SingletonConfigurable):
         self.magics_manager.register_function(func, 
                                   magic_kind=magic_kind, magic_name=magic_name)
 
-    def run_line_magic(self, magic_name, line):
+    def run_line_magic(self, magic_name, line, _stack_depth=1):
         """Execute the given line magic.
 
         Parameters
@@ -2043,6 +2065,10 @@ class InteractiveShell(SingletonConfigurable):
 
         line : str
           The rest of the input line as a single string.
+          
+        _stack_depth : int
+          If run_line_magic() is called from magic() then _stack_depth=2.
+          This is added to ensure backward compatibility for use of 'get_ipython().magic()'
         """
         fn = self.find_line_magic(magic_name)
         if fn is None:
@@ -2050,12 +2076,14 @@ class InteractiveShell(SingletonConfigurable):
             etpl = "Line magic function `%%%s` not found%s."
             extra = '' if cm is None else (' (But cell magic `%%%%%s` exists, '
                                     'did you mean that instead?)' % magic_name )
-            error(etpl % (magic_name, extra))
+            raise UsageError(etpl % (magic_name, extra))
         else:
             # Note: this is the distance in the stack to the user's frame.
             # This will need to be updated if the internal calling logic gets
             # refactored, or else we'll be expanding the wrong variables.
-            stack_depth = 2
+            
+            # Determine stack_depth depending on where run_line_magic() has been called
+            stack_depth = _stack_depth
             magic_arg_s = self.var_expand(line, stack_depth)
             # Put magic args in a list so we can call with f(*a) syntax
             args = [magic_arg_s]
@@ -2087,7 +2115,7 @@ class InteractiveShell(SingletonConfigurable):
             etpl = "Cell magic `%%{0}` not found{1}."
             extra = '' if lm is None else (' (But line magic `%{0}` exists, '
                             'did you mean that instead?)'.format(magic_name))
-            error(etpl.format(magic_name, extra))
+            raise UsageError(etpl.format(magic_name, extra))
         elif cell == '':
             message = '%%{0} is a cell magic, but the cell body is empty.'.format(magic_name)
             if self.find_line_magic(magic_name) is not None:
@@ -2143,7 +2171,7 @@ class InteractiveShell(SingletonConfigurable):
         # TODO: should we issue a loud deprecation warning here?
         magic_name, _, magic_arg_s = arg_s.partition(' ')
         magic_name = magic_name.lstrip(prefilter.ESC_MAGIC)
-        return self.run_line_magic(magic_name, magic_arg_s)
+        return self.run_line_magic(magic_name, magic_arg_s, _stack_depth=2)
 
     #-------------------------------------------------------------------------
     # Things related to macros
@@ -2597,6 +2625,7 @@ class InteractiveShell(SingletonConfigurable):
 
         if (not raw_cell) or raw_cell.isspace():
             self.last_execution_succeeded = True
+            self.last_execution_result = result
             return result
         
         if silent:
@@ -2608,6 +2637,7 @@ class InteractiveShell(SingletonConfigurable):
         def error_before_exec(value):
             result.error_before_exec = value
             self.last_execution_succeeded = False
+            self.last_execution_result = result
             return result
 
         self.events.trigger('pre_execute')
@@ -2698,6 +2728,7 @@ class InteractiveShell(SingletonConfigurable):
                    interactivity=interactivity, compiler=compiler, result=result)
                 
                 self.last_execution_succeeded = not has_raised
+                self.last_execution_result = result
 
                 # Reset this so later displayed values do not modify the
                 # ExecutionResult
@@ -2748,7 +2779,7 @@ class InteractiveShell(SingletonConfigurable):
         return node
                 
 
-    def run_ast_nodes(self, nodelist, cell_name, interactivity='last_expr',
+    def run_ast_nodes(self, nodelist:ListType[AST], cell_name:str, interactivity='last_expr',
                         compiler=compile, result=None):
         """Run a sequence of AST nodes. The execution mode depends on the
         interactivity parameter.
@@ -2761,11 +2792,13 @@ class InteractiveShell(SingletonConfigurable):
           Will be passed to the compiler as the filename of the cell. Typically
           the value returned by ip.compile.cache(cell).
         interactivity : str
-          'all', 'last', 'last_expr' or 'none', specifying which nodes should be
-          run interactively (displaying output from expressions). 'last_expr'
-          will run the last node interactively only if it is an expression (i.e.
-          expressions in loops or other blocks are not displayed. Other values
-          for this parameter will raise a ValueError.
+          'all', 'last', 'last_expr' , 'last_expr_or_assign' or 'none',
+          specifying which nodes should be run interactively (displaying output
+          from expressions). 'last_expr' will run the last node interactively
+          only if it is an expression (i.e. expressions in loops or other blocks
+          are not displayed) 'last_expr_or_assign' will run the last expression
+          or the last assignment. Other values for this parameter will raise a
+          ValueError.
         compiler : callable
           A function with the same interface as the built-in compile(), to turn
           the AST nodes into code objects. Default is the built-in compile().
@@ -2779,6 +2812,21 @@ class InteractiveShell(SingletonConfigurable):
         """
         if not nodelist:
             return
+
+        if interactivity == 'last_expr_or_assign':
+            if isinstance(nodelist[-1], _assign_nodes):
+                asg = nodelist[-1]
+                if isinstance(asg, ast.Assign) and len(asg.targets) == 1:
+                    target = asg.targets[0]
+                elif isinstance(asg, _single_targets_nodes):
+                    target = asg.target
+                else:
+                    target = None
+                if isinstance(target, ast.Name):
+                    nnode = ast.Expr(ast.Name(target.id, ast.Load()))
+                    ast.fix_missing_locations(nnode)
+                    nodelist.append(nnode)
+            interactivity = 'last_expr'
 
         if interactivity == 'last_expr':
             if isinstance(nodelist[-1], ast.Expr):
@@ -2923,7 +2971,7 @@ class InteractiveShell(SingletonConfigurable):
                 self.pylab_gui_select = gui
             # Otherwise if they are different
             elif gui != self.pylab_gui_select:
-                print ('Warning: Cannot change to a different GUI toolkit: %s.'
+                print('Warning: Cannot change to a different GUI toolkit: %s.'
                         ' Using %s instead.' % (gui, self.pylab_gui_select))
                 gui, backend = pt.find_gui_and_backend(self.pylab_gui_select)
         

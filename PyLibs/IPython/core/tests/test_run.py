@@ -17,6 +17,7 @@ import functools
 import os
 from os.path import join as pjoin
 import random
+import string
 import sys
 import textwrap
 import unittest
@@ -165,8 +166,8 @@ def doctest_reset_del():
 class TestMagicRunPass(tt.TempFileMixin):
 
     def setup(self):
-        """Make a valid python temp file."""
-        self.mktmp('pass\n')
+        content = "a = [1,2,3]\nb = 1"
+        self.mktmp(content)
         
     def run_tmpfile(self):
         _ip = get_ipython()
@@ -212,6 +213,16 @@ class TestMagicRunPass(tt.TempFileMixin):
             _ip.magic('run -d %s' % self.fname)
         with tt.fake_input(['c']):
             _ip.magic('run -d %s' % self.fname)
+
+    def test_run_debug_twice_with_breakpoint(self):
+        """Make a valid python temp file."""
+        _ip = get_ipython()
+        with tt.fake_input(['b 2', 'c', 'c']):
+            _ip.magic('run -d %s' % self.fname)
+
+        with tt.fake_input(['c']):
+            with tt.AssertNotPrints('KeyError'):
+                _ip.magic('run -d %s' % self.fname)
 
 
 class TestMagicRunSimple(tt.TempFileMixin):
@@ -405,8 +416,8 @@ class TestMagicRunWithPackage(unittest.TestCase):
             f.write(textwrap.dedent(content))
 
     def setUp(self):
-        self.package = package = 'tmp{0}'.format(repr(random.random())[2:])
-        """Temporary valid python package name."""
+        self.package = package = 'tmp{0}'.format(''.join([random.choice(string.ascii_letters) for i in range(10)]))
+        """Temporary  (probably) valid python package name."""
 
         self.value = int(random.random() * 10000)
 

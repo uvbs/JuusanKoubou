@@ -5,18 +5,14 @@
 # Distributed under the terms of the Modified BSD License.
 
 
-try:
-    from base64 import encodebytes as base64_encode
-except ImportError:
-    from base64 import encodestring as base64_encode
-
-from binascii import b2a_hex
+from binascii import b2a_hex, b2a_base64, hexlify
 import json
 import mimetypes
 import os
 import struct
 import sys
 import warnings
+from copy import deepcopy
 
 from IPython.utils.py3compat import cast_unicode
 from IPython.testing.skipdoctest import skip_doctest
@@ -24,9 +20,10 @@ from IPython.testing.skipdoctest import skip_doctest
 __all__ = ['display', 'display_pretty', 'display_html', 'display_markdown',
 'display_svg', 'display_png', 'display_jpeg', 'display_latex', 'display_json',
 'display_javascript', 'display_pdf', 'DisplayObject', 'TextDisplayObject',
-'Pretty', 'HTML', 'Markdown', 'Math', 'Latex', 'SVG', 'JSON', 'GeoJSON', 'Javascript',
-'Image', 'clear_output', 'set_matplotlib_formats', 'set_matplotlib_close',
-'publish_display_data', 'update_display', 'DisplayHandle', 'Video']
+'Pretty', 'HTML', 'Markdown', 'Math', 'Latex', 'SVG', 'ProgressBar', 'JSON',
+'GeoJSON', 'Javascript', 'Image', 'clear_output', 'set_matplotlib_formats',
+'set_matplotlib_close', 'publish_display_data', 'update_display', 'DisplayHandle',
+'Video']
 
 #-----------------------------------------------------------------------------
 # utility functions
@@ -85,17 +82,7 @@ def publish_display_data(data, metadata=None, source=None, *, transient=None, **
     See the ``display_data`` message in the messaging documentation for
     more details about this message type.
 
-    The following MIME types are currently implemented:
-
-    * text/plain
-    * text/html
-    * text/markdown
-    * text/latex
-    * application/json
-    * application/javascript
-    * image/png
-    * image/jpeg
-    * image/svg+xml
+    Keys of data and metadata can be any mime-type.
 
     Parameters
     ----------
@@ -258,7 +245,8 @@ def display(*objs, include=None, exclude=None, metadata=None, transient=None, di
       - `_repr_svg_`: return raw SVG data as a string
       - `_repr_latex_`: return LaTeX commands in a string surrounded by "$".
       - `_repr_mimebundle_`: return a full mimebundle containing the mapping
-      from all mimetypes to data
+                             from all mimetypes to data.
+                             Use this for any mime-type not listed above.
 
     When you are directly writing your own classes, you can adapt them for
     display in IPython by following the above approach. But in practice, you
@@ -278,9 +266,18 @@ def display(*objs, include=None, exclude=None, metadata=None, transient=None, di
         from IPython.display import display
 
     """
+    from IPython.core.interactiveshell import InteractiveShell
+    
+    if not InteractiveShell.initialized():
+        # Directly print objects.
+        print(*objs)
+        return
+    
     raw = kwargs.pop('raw', False)
     if transient is None:
         transient = {}
+    if metadata is None:
+        metadata={}
     if display_id:
         if display_id is True:
             display_id = _new_id()
@@ -289,8 +286,6 @@ def display(*objs, include=None, exclude=None, metadata=None, transient=None, di
         raise TypeError('display_id required for update_display')
     if transient:
         kwargs['transient'] = transient
-
-    from IPython.core.interactiveshell import InteractiveShell
 
     if not raw:
         format = InteractiveShell.instance().display_formatter.format
@@ -568,8 +563,9 @@ class DisplayObject(object):
 
     _read_flags = 'r'
     _show_mem_addr = False
+    metadata = None
 
-    def __init__(self, data=None, url=None, filename=None):
+    def __init__(self, data=None, url=None, filename=None, metadata=None):
         """Create a display object given raw data.
 
         When this object is returned by an expression or passed to the
@@ -587,6 +583,8 @@ class DisplayObject(object):
             A URL to download the data from.
         filename : unicode
             Path to a local file to load the data from.
+        metadata : dict
+            Dict of metadata associated to be the object when displayed
         """
         if data is not None and isinstance(data, str):
             if data.startswith('http') and url is None:
@@ -602,6 +600,11 @@ class DisplayObject(object):
         self.url = url
         self.filename = filename
 
+        if metadata is not None:
+            self.metadata = metadata
+        elif self.metadata is None:
+            self.metadata = {}
+
         self.reload()
         self._check_data()
 
@@ -616,6 +619,13 @@ class DisplayObject(object):
     def _check_data(self):
         """Override in subclasses if there's something to check."""
         pass
+
+    def _data_and_metadata(self):
+        """shortcut for returning metadata with shape information, if defined"""
+        if self.metadata:
+            return self.data, deepcopy(self.metadata)
+        else:
+            return self.data
 
     def reload(self):
         """Reload the raw data from file or URL."""
@@ -649,8 +659,8 @@ class TextDisplayObject(DisplayObject):
 
 class Pretty(TextDisplayObject):
 
-    def _repr_pretty_(self):
-        return self.data
+    def _repr_pretty_(self, pp, cycle):
+        return pp.text(self.data)
 
 
 class HTML(TextDisplayObject):
@@ -715,10 +725,54 @@ class SVG(DisplayObject):
             pass
         svg = cast_unicode(svg)
         self._data = svg
-
+    
     def _repr_svg_(self):
-        return self.data
+        return self._data_and_metadata()
 
+class ProgressBar(DisplayObject):
+    """Progressbar supports displaying a progressbar like element 
+    """
+    def __init__(self, total):
+        """Creates a new progressbar
+        
+        Parameters
+        ----------
+        total : int
+            maximum size of the progressbar
+        """
+        self.total = total
+        self._progress = 0
+        self.html_width = '60ex'
+        self.text_width = 60
+        self._display_id = hexlify(os.urandom(8)).decode('ascii')
+
+    def __repr__(self):
+        fraction = self.progress / self.total
+        filled = '=' * int(fraction * self.text_width)
+        rest = ' ' * (self.text_width - len(filled))
+        return '[{}{}] {}/{}'.format(
+            filled, rest,
+            self.progress, self.total,
+        )
+
+    def _repr_html_(self):
+        return "<progress style='width:{}' max='{}' value='{}'></progress>".format(
+            self.html_width, self.total, self.progress)
+
+    def display(self):
+        display(self, display_id=self._display_id)
+
+    def update(self):
+        display(self, display_id=self._display_id, update=True)
+
+    @property
+    def progress(self):
+        return self._progress
+
+    @progress.setter
+    def progress(self, value):
+        self._progress = value
+        self.update()
 
 class JSON(DisplayObject):
     """JSON expects a JSON-able dict or list
@@ -924,8 +978,7 @@ def _pngxy(data):
     """read the (width, height) from a PNG header"""
     ihdr = data.index(b'IHDR')
     # next 8 bytes are width/height
-    w4h4 = data[ihdr+4:ihdr+12]
-    return struct.unpack('>ii', w4h4)
+    return struct.unpack('>ii', data[ihdr+4:ihdr+12])
 
 def _jpegxy(data):
     """read the (width, height) from a JPEG header"""
@@ -946,17 +999,28 @@ def _jpegxy(data):
     h, w = struct.unpack('>HH', data[iSOF+5:iSOF+9])
     return w, h
 
+def _gifxy(data):
+    """read the (width, height) from a GIF header"""
+    return struct.unpack('<HH', data[6:10])
+
+
 class Image(DisplayObject):
 
     _read_flags = 'rb'
     _FMT_JPEG = u'jpeg'
     _FMT_PNG = u'png'
-    _ACCEPTABLE_EMBEDDINGS = [_FMT_JPEG, _FMT_PNG]
+    _FMT_GIF = u'gif'
+    _ACCEPTABLE_EMBEDDINGS = [_FMT_JPEG, _FMT_PNG, _FMT_GIF]
+    _MIMETYPES = {
+        _FMT_PNG: 'image/png',
+        _FMT_JPEG: 'image/jpeg',
+        _FMT_GIF: 'image/gif',
+    }
 
     def __init__(self, data=None, url=None, filename=None, format=None,
                  embed=None, width=None, height=None, retina=False,
                  unconfined=False, metadata=None):
-        """Create a PNG/JPEG image object given raw data.
+        """Create a PNG/JPEG/GIF image object given raw data.
 
         When this object is returned by an input cell or passed to the
         display function, it will result in the image being displayed
@@ -974,7 +1038,7 @@ class Image(DisplayObject):
             Path to a local file to load the data from.
             Images from a file are always embedded.
         format : unicode
-            The format of the image data (png/jpeg/jpg). If a filename or URL is given
+            The format of the image data (png/jpeg/jpg/gif). If a filename or URL is given
             for format will be inferred from the filename extension.
         embed : bool
             Should the image data be embedded using a data URI (True) or be
@@ -1036,6 +1100,8 @@ class Image(DisplayObject):
                     format = self._FMT_JPEG
                 if ext == u'png':
                     format = self._FMT_PNG
+                if ext == u'gif':
+                    format = self._FMT_GIF
                 else:
                     format = ext.lower()
             elif isinstance(data, bytes):
@@ -1046,7 +1112,7 @@ class Image(DisplayObject):
 
         # failed to detect format, default png
         if format is None:
-            format = 'png'
+            format = self._FMT_PNG
 
         if format.lower() == 'jpg':
             # jpg->jpeg
@@ -1057,24 +1123,36 @@ class Image(DisplayObject):
 
         if self.embed and self.format not in self._ACCEPTABLE_EMBEDDINGS:
             raise ValueError("Cannot embed the '%s' image format" % (self.format))
+        if self.embed:
+            self._mimetype = self._MIMETYPES.get(self.format)
+
         self.width = width
         self.height = height
         self.retina = retina
         self.unconfined = unconfined
-        self.metadata = metadata
-        super(Image, self).__init__(data=data, url=url, filename=filename)
+        super(Image, self).__init__(data=data, url=url, filename=filename, 
+                metadata=metadata)
+
+        if self.width is None and self.metadata.get('width', {}):
+            self.width = metadata['width']
+
+        if self.height is None and self.metadata.get('height', {}):
+            self.height = metadata['height']
 
         if retina:
             self._retina_shape()
+
 
     def _retina_shape(self):
         """load pixel-doubled width and height from image data"""
         if not self.embed:
             return
-        if self.format == 'png':
+        if self.format == self._FMT_PNG:
             w, h = _pngxy(self.data)
-        elif self.format == 'jpeg':
+        elif self.format == self._FMT_JPEG:
             w, h = _jpegxy(self.data)
+        elif self.format == self._FMT_GIF:
+            w, h = _gifxy(self.data)
         else:
             # retina only supports png
             return
@@ -1104,32 +1182,48 @@ class Image(DisplayObject):
                 klass=klass,
             )
 
-    def _data_and_metadata(self):
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        """Return the image as a mimebundle
+
+        Any new mimetype support should be implemented here.
+        """
+        if self.embed:
+            mimetype = self._mimetype
+            data, metadata = self._data_and_metadata(always_both=True)
+            if metadata:
+                metadata = {mimetype: metadata}
+            return {mimetype: data}, metadata
+        else:
+            return {'text/html': self._repr_html_()}
+
+    def _data_and_metadata(self, always_both=False):
         """shortcut for returning metadata with shape information, if defined"""
+        b64_data = b2a_base64(self.data).decode('ascii')
         md = {}
+        if self.metadata:
+            md.update(self.metadata)
         if self.width:
             md['width'] = self.width
         if self.height:
             md['height'] = self.height
         if self.unconfined:
             md['unconfined'] = self.unconfined
-        if self.metadata:
-            md.update(self.metadata)
-        if md:
-            return self.data, md
+        if md or always_both:
+            return b64_data, md
         else:
-            return self.data
+            return b64_data
 
     def _repr_png_(self):
-        if self.embed and self.format == u'png':
+        if self.embed and self.format == self._FMT_PNG:
             return self._data_and_metadata()
 
     def _repr_jpeg_(self):
-        if self.embed and (self.format == u'jpeg' or self.format == u'jpg'):
+        if self.embed and self.format == self._FMT_JPEG:
             return self._data_and_metadata()
 
     def _find_ext(self, s):
         return s.split('.')[-1].lower()
+
 
 class Video(DisplayObject):
 
@@ -1217,7 +1311,7 @@ class Video(DisplayObject):
             # unicode input is already b64-encoded
             b64_video = video
         else:
-            b64_video = base64_encode(video).decode('ascii').rstrip()
+            b64_video = b2a_base64(video).decode('ascii').rstrip()
 
         output = """<video controls>
  <source src="data:{0};base64,{1}" type="{0}">
@@ -1229,12 +1323,6 @@ class Video(DisplayObject):
         # TODO
         pass
 
-    def _repr_png_(self):
-        # TODO
-        pass
-    def _repr_jpeg_(self):
-        # TODO
-        pass
 
 def clear_output(wait=False):
     """Clear the output of the current cell receiving output.

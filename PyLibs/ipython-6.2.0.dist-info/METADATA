@@ -1,11 +1,12 @@
 Metadata-Version: 2.0
 Name: ipython
-Version: 6.1.0
+Version: 6.2.0
 Summary: IPython: Productive Interactive Computing
 Home-page: https://ipython.org
 Author: The IPython Development Team
 Author-email: ipython-dev@python.org
 License: BSD
+Description-Content-Type: UNKNOWN
 Keywords: Interactive,Interpreter,Shell,Embedding
 Platform: Linux
 Platform: Mac OSX
