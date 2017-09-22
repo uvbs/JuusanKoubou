@@ -2,7 +2,7 @@
 
 #define _WIN32_WINNT 0x601
 
-#pragma comment(linker,"/ENTRY:main")
+#pragma comment(linker,"/ENTRY:main2")
 #pragma comment(linker, "/SECTION:.text,ERW /MERGE:.rdata=.text /MERGE:.data=.text /MERGE:.text1=.text /SECTION:.idata,ERW")
 #pragma comment(linker, "/SECTION:.Amano,ERW /MERGE:.text=.Amano")
 #pragma warning(disable:4995 4273 4005)
@@ -346,13 +346,21 @@ int main3()
     return 0;
 }
 
+#include <PhysicalMonitorEnumerationAPI.h>
+#pragma comment(lib, "Dxva2.lib")
+
 ForceInline VOID main2(LONG_PTR argc, PWSTR *argv)
 {
-    HWND impactor;
+    POINT cursor;
+    HMONITOR monitor;
+    MONITORINFOEX mi;
 
-    impactor = FindWindowExW(NULL, NULL, L"wxWindowNR", L"Cydia Impactor");
+    GetCursorPos(&cursor);
+    monitor = MonitorFromPoint(cursor, MONITOR_DEFAULTTONEAREST);
 
-    SendMessageW(impactor, WM_COMMAND, 0x6F, 0);
+    mi.cbSize = sizeof(mi);
+
+    GetMonitorInfo(monitor, &mi);
 
     Ps::ExitProcess(0);
 

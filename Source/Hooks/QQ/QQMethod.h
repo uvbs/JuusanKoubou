@@ -246,7 +246,8 @@ inline NTSTATUS InitializeQqFunctionTable()
         { L"AppUtil.dll",       "?HBitmapToTexture@Texture@Util@@YAPAUHGTEXTURE__@@PAUHBITMAP__@@@Z",   &Util::Texture::HBitmapToTexture },
 
         { L"KernelUtil.dll",    "?GetSelfUin@Contact@Util@@YAKXZ",                                      &Util::Contact::GetSelfUin },
-        { L"KernelUtil.dll",    "?IsSuperVip@Contact@Util@@YAHKPAKPAUITXIMContactInfoMgr@@@Z",          &Util::Contact::IsSuperVip },
+        { L"KernelUtil.dll",    "?IsSuperVip@Contact@Util@@YAHKPAK@Z",                                  &Util::Contact::IsSuperVip },
+        { L"KernelUtil.dll",    "?IsSuperVip@Contact@Util@@YAHKPAKPAUITXIMContactInfoMgr@@@Z",          &Util::Contact::IsSuperVip },   // 8.8
         { L"KernelUtil.dll",    "?CheckMsgImage@Group@Util@@YAHPAUITXMsgPack@@AAVCTXStringW@@@Z",       &Util::Group::CheckMsgImage },
         { L"KernelUtil.dll",    "?Init@Version@@YAHXZ",                                                 &Version::Init },
 
@@ -263,7 +264,10 @@ inline NTSTATUS InitializeQqFunctionTable()
     BaseAddress = nullptr;
 
     FOR_EACH_ARRAY(Entry, InitEnties)
-    {
+    {        
+        if (*(PVOID *)Entry->FuncAddress != nullptr)
+            continue;
+
         if (Entry == InitEnties)
         {
             BaseAddress = Ldr::LoadDll(Entry->DllName);
