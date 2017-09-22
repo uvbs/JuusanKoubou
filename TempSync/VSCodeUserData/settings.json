@@ -19,7 +19,6 @@
     "editor.renderWhitespace": "all",
     "files.trimTrailingWhitespace": true,
     "window.newWindowDimensions": "inherit",
-    "editor.smoothScrolling": false,
 
     "go.buildOnSave": true,
     "go.lintOnSave": false,
