@@ -5,16 +5,16 @@ import inspect
 import re
 import sys
 import os
+import types
 from functools import partial
 
-from jedi._compatibility import builtins as _builtins, unicode
+from jedi._compatibility import builtins as _builtins, unicode, py_version
 from jedi import debug
 from jedi.cache import underscore_memoization, memoize_method
-from jedi.parser.python.tree import Param, Operator
-from jedi.evaluate.helpers import FakeName
 from jedi.evaluate.filters import AbstractFilter, AbstractNameDefinition, \
     ContextNameMixin
 from jedi.evaluate.context import Context, LazyKnownContext
+from jedi.evaluate.compiled.getattr_static import getattr_static
 from . import fake
 
 
@@ -24,6 +24,23 @@ if os.path.altsep is not None:
 _path_re = re.compile('(?:\.[^{0}]+|[{0}]__init__\.py)$'.format(re.escape(_sep)))
 del _sep
 
+# Those types don't exist in typing.
+MethodDescriptorType = type(str.replace)
+WrapperDescriptorType = type(set.__iter__)
+# `object.__subclasshook__` is an already executed descriptor.
+object_class_dict = type.__dict__["__dict__"].__get__(object)
+ClassMethodDescriptorType = type(object_class_dict['__subclasshook__'])
+
+ALLOWED_DESCRIPTOR_ACCESS = (
+    types.FunctionType,
+    types.GetSetDescriptorType,
+    types.MemberDescriptorType,
+    MethodDescriptorType,
+    WrapperDescriptorType,
+    ClassMethodDescriptorType,
+    staticmethod,
+    classmethod,
+)
 
 class CheckAttribute(object):
     """Raises an AttributeError if the attribute X isn't available."""
@@ -50,7 +67,7 @@ class CheckAttribute(object):
 
 class CompiledObject(Context):
     path = None  # modules have this attribute - set it to None.
-    used_names = {}  # To be consistent with modules.
+    used_names = lambda self: {}  # To be consistent with modules.
 
     def __init__(self, evaluator, obj, parent_context=None, faked_class=None):
         super(CompiledObject, self).__init__(evaluator, parent_context)
@@ -94,45 +111,53 @@ class CompiledObject(Context):
     def is_class(self):
         return inspect.isclass(self.obj)
 
-    @property
-    def doc(self):
+    def py__doc__(self, include_call_signature=False):
         return inspect.getdoc(self.obj) or ''
 
-    @property
-    def get_params(self):
-        return []  # TODO Fix me.
-        params_str, ret = self._parse_function_doc()
-        tokens = params_str.split(',')
-        if inspect.ismethoddescriptor(self.obj):
-            tokens.insert(0, 'self')
-        params = []
-        for p in tokens:
-            parts = [FakeName(part) for part in p.strip().split('=')]
-            if len(parts) > 1:
-                parts.insert(1, Operator('=', (0, 0)))
-            params.append(Param(parts, self))
-        return params
-
     def get_param_names(self):
-        params_str, ret = self._parse_function_doc()
-        tokens = params_str.split(',')
-        if inspect.ismethoddescriptor(self.obj):
-            tokens.insert(0, 'self')
-        for p in tokens:
-            parts = p.strip().split('=')
-            if len(parts) > 1:
-                parts.insert(1, Operator('=', (0, 0)))
-            yield UnresolvableParamName(self, parts[0])
+        obj = self.obj
+        try:
+            if py_version < 33:
+                raise ValueError("inspect.signature was introduced in 3.3")
+            if py_version == 34:
+                # In 3.4 inspect.signature are wrong for str and int. This has
+                # been fixed in 3.5. The signature of object is returned,
+                # because no signature was found for str. Here we imitate 3.5
+                # logic and just ignore the signature if the magic methods
+                # don't match object.
+                # 3.3 doesn't even have the logic and returns nothing for str
+                # and classes that inherit from object.
+                user_def = inspect._signature_get_user_defined_method
+                if (inspect.isclass(obj)
+                        and not user_def(type(obj), '__init__')
+                        and not user_def(type(obj), '__new__')
+                        and (obj.__init__ != object.__init__
+                             or obj.__new__ != object.__new__)):
+                    raise ValueError
+
+            signature = inspect.signature(obj)
+        except ValueError:  # Has no signature
+            params_str, ret = self._parse_function_doc()
+            tokens = params_str.split(',')
+            if inspect.ismethoddescriptor(obj):
+                tokens.insert(0, 'self')
+            for p in tokens:
+                parts = p.strip().split('=')
+                yield UnresolvableParamName(self, parts[0])
+        else:
+            for signature_param in signature.parameters.values():
+                yield SignatureParamName(self, signature_param)
 
     def __repr__(self):
         return '<%s: %s>' % (self.__class__.__name__, repr(self.obj))
 
     @underscore_memoization
     def _parse_function_doc(self):
-        if self.doc is None:
+        doc = self.py__doc__()
+        if doc is None:
             return '', ''
 
-        return _parse_function_doc(self.doc)
+        return _parse_function_doc(doc)
 
     @property
     def api_type(self):
@@ -192,12 +217,6 @@ class CompiledObject(Context):
         """
         return CompiledObjectFilter(self.evaluator, self, is_instance)
 
-    def get_subscope_by_name(self, name):
-        if name in dir(self.obj):
-            return CompiledName(self.evaluator, self, name).parent
-        else:
-            raise KeyError("CompiledObject doesn't have an attribute '%s'." % name)
-
     @CheckAttribute
     def py__getitem__(self, index):
         if type(self.obj) not in (str, list, tuple, unicode, bytes, bytearray, dict):
@@ -212,7 +231,10 @@ class CompiledObject(Context):
             # Get rid of side effects, we won't call custom `__getitem__`s.
             return
 
-        for part in self.obj:
+        for i, part in enumerate(self.obj):
+            if i > 20:
+                # Should not go crazy with large iterators
+                break
             yield LazyKnownContext(create(self.evaluator, part))
 
     def py__name__(self):
@@ -230,9 +252,9 @@ class CompiledObject(Context):
         return CompiledContextName(self, name)
 
     def _execute_function(self, params):
+        from jedi.evaluate import docstrings
         if self.type != 'funcdef':
             return
-
         for name in self._parse_function_doc()[1].split():
             try:
                 bltn_obj = getattr(_builtins, name)
@@ -246,15 +268,17 @@ class CompiledObject(Context):
                 bltn_obj = create(self.evaluator, bltn_obj)
                 for result in self.evaluator.execute(bltn_obj, params):
                     yield result
-
-    def is_scope(self):
-        return True
+        for type_ in docstrings.infer_return_types(self):
+            yield type_
 
     def get_self_attributes(self):
         return []  # Instance compatibility
 
     def get_imports(self):
         return []  # Builtins don't have imports
+
+    def dict_values(self):
+        return set(create(self.evaluator, v) for v in self.obj.values())
 
 
 class CompiledName(AbstractNameDefinition):
@@ -278,6 +302,29 @@ class CompiledName(AbstractNameDefinition):
     def infer(self):
         module = self.parent_context.get_root_context()
         return [_create_from_name(self._evaluator, module, self.parent_context, self.string_name)]
+
+
+class SignatureParamName(AbstractNameDefinition):
+    api_type = 'param'
+
+    def __init__(self, compiled_obj, signature_param):
+        self.parent_context = compiled_obj.parent_context
+        self._signature_param = signature_param
+
+    @property
+    def string_name(self):
+        return self._signature_param.name
+
+    def infer(self):
+        p = self._signature_param
+        evaluator = self.parent_context.evaluator
+        types = set()
+        if p.default is not p.empty:
+            types.add(create(evaluator, p.default))
+        if p.annotation is not p.empty:
+            annotation = create(evaluator, p.annotation)
+            types |= annotation.execute_evaluated()
+        return types
 
 
 class UnresolvableParamName(AbstractNameDefinition):
@@ -325,16 +372,17 @@ class CompiledObjectFilter(AbstractFilter):
         name = str(name)
         obj = self._compiled_object.obj
         try:
-            getattr(obj, name)
-            if self._is_instance and name not in dir(obj):
-                return []
+            attr, is_get_descriptor = getattr_static(obj, name)
         except AttributeError:
             return []
-        except Exception:
-            # This is a bit ugly. We're basically returning this to make
-            # lookups possible without having the actual attribute. However
-            # this makes proper completion possible.
-            return [EmptyCompiledName(self._evaluator, name)]
+        else:
+            if is_get_descriptor \
+                    and not type(attr) in ALLOWED_DESCRIPTOR_ACCESS:
+                # In case of descriptors that have get methods we cannot return
+                # it's value, because that would mean code execution.
+                return [EmptyCompiledName(self._evaluator, name)]
+            if self._is_instance and name not in dir(obj):
+                return []
         return [self._create_name(name)]
 
     def values(self):
@@ -575,7 +623,7 @@ def create(evaluator, obj, parent_context=None, module=None, faked=None):
             # Modules don't have parents, be careful with caching: recurse.
             return create(evaluator, obj)
     else:
-        if parent_context is None and obj != _builtins:
+        if parent_context is None and obj is not _builtins:
             return create(evaluator, obj, create(evaluator, _builtins))
 
         try:

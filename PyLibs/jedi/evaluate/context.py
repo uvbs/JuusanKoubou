@@ -1,10 +1,14 @@
 from jedi._compatibility import Python3Method
 from jedi.common import unite
-from jedi.parser.python.tree import ExprStmt, CompFor
+from parso.python.tree import ExprStmt, CompFor
+from jedi.parser_utils import clean_scope_docstring, get_doc_with_call_signature
 
 
 class Context(object):
-    api_type = None
+    """
+    Should be defined, otherwise the API returns empty types.
+    """
+
     """
     To be defined by subclasses.
     """
@@ -14,6 +18,12 @@ class Context(object):
     def __init__(self, evaluator, parent_context=None):
         self.evaluator = evaluator
         self.parent_context = parent_context
+
+    @property
+    def api_type(self):
+        # By default just lower name of the class. Can and should be
+        # overwritten.
+        return self.__class__.__name__.lower()
 
     def get_root_context(self):
         context = self
@@ -39,17 +49,18 @@ class Context(object):
     def eval_stmt(self, stmt, seek_name=None):
         return self.evaluator.eval_statement(self, stmt, seek_name)
 
-    @Python3Method
     def eval_trailer(self, types, trailer):
         return self.evaluator.eval_trailer(self, types, trailer)
 
     @Python3Method
     def py__getattribute__(self, name_or_str, name_context=None, position=None,
-                           search_global=False, is_goto=False):
+                           search_global=False, is_goto=False,
+                           analysis_errors=True):
         if name_context is None:
             name_context = self
         return self.evaluator.find_types(
-            self, name_or_str, name_context, position, search_global, is_goto)
+            self, name_or_str, name_context, position, search_global, is_goto,
+            analysis_errors)
 
     def create_context(self, node, node_is_context=False, node_is_object=False):
         return self.evaluator.create_context(self, node, node_is_context, node_is_object)
@@ -63,6 +74,18 @@ class Context(object):
         the return value will always be true.
         """
         return True
+
+    def py__doc__(self, include_call_signature=False):
+        try:
+            self.tree_node.get_doc_node
+        except AttributeError:
+            return ''
+        else:
+            if include_call_signature:
+                return get_doc_with_call_signature(self.tree_node)
+            else:
+                return clean_scope_docstring(self.tree_node)
+        return None
 
 
 class TreeContext(Context):
@@ -168,7 +191,7 @@ class ContextualizedName(ContextualizedNode):
         node = self._node.parent
         compare = self._node
         while node is not None:
-            if node.type in ('testlist_comp', 'testlist_star_expr', 'exprlist'):
+            if node.type in ('testlist', 'testlist_comp', 'testlist_star_expr', 'exprlist'):
                 for i, child in enumerate(node.children):
                     if child == compare:
                         indexes.insert(0, (int(i / 2), node))

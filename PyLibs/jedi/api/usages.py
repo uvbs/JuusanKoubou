@@ -1,5 +1,5 @@
 from jedi.api import classes
-from jedi.parser.python import tree
+from parso.python import tree
 from jedi.evaluate import imports
 from jedi.evaluate.filters import TreeNameDefinition
 from jedi.evaluate.representation import ModuleContext
@@ -41,7 +41,7 @@ def usages(evaluator, definition_names, mods):
     definition_names = set(resolve_names(definition_names))
     for m in imports.get_modules_containing_name(evaluator, mods, search_name):
         if isinstance(m, ModuleContext):
-            for name_node in m.tree_node.used_names.get(search_name, []):
+            for name_node in m.tree_node.get_used_names().get(search_name, []):
                 context = evaluator.create_context(m, name_node)
                 result = evaluator.goto(context, name_node)
                 if any(compare_contexts(c1, c2)

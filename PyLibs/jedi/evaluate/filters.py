@@ -4,9 +4,10 @@ are needed for name resolution.
 """
 from abc import abstractmethod
 
-from jedi.parser.python.tree import search_ancestor
+from parso.tree import search_ancestor
 from jedi.evaluate import flow_analysis
 from jedi.common import to_list, unite
+from jedi.parser_utils import get_parent_scope
 
 
 class AbstractNameDefinition(object):
@@ -18,6 +19,12 @@ class AbstractNameDefinition(object):
     @abstractmethod
     def infer(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def goto(self):
+        # Typically names are already definitions and therefore a goto on that
+        # name will always result on itself.
+        return set([self])
 
     def get_root_context(self):
         return self.parent_context.get_root_context()
@@ -42,6 +49,9 @@ class AbstractTreeName(AbstractNameDefinition):
     def __init__(self, parent_context, tree_name):
         self.parent_context = parent_context
         self.tree_name = tree_name
+
+    def goto(self):
+        return self.parent_context.evaluator.goto(self.parent_context, self.tree_name)
 
     @property
     def string_name(self):
@@ -73,6 +83,14 @@ class ContextName(ContextNameMixin, AbstractTreeName):
 
 
 class TreeNameDefinition(AbstractTreeName):
+    _API_TYPES = dict(
+        import_name='module',
+        import_from='module',
+        funcdef='function',
+        param='param',
+        classdef='class',
+    )
+
     def infer(self):
         # Refactor this, should probably be here.
         from jedi.evaluate.finder import _name_to_types
@@ -80,14 +98,10 @@ class TreeNameDefinition(AbstractTreeName):
 
     @property
     def api_type(self):
-        definition = self.tree_name.get_definition()
-        return dict(
-            import_name='module',
-            import_from='module',
-            funcdef='function',
-            param='param',
-            classdef='class',
-        ).get(definition.type, 'statement')
+        definition = self.tree_name.get_definition(import_name_always=True)
+        if definition is None:
+            return 'statement'
+        return self._API_TYPES.get(definition.type, 'statement')
 
 
 class ParamName(AbstractTreeName):
@@ -103,13 +117,15 @@ class ParamName(AbstractTreeName):
     def get_param(self):
         params = self.parent_context.get_params()
         param_node = search_ancestor(self.tree_name, 'param')
-        return params[param_node.position_nr]
+        return params[param_node.position_index]
 
 
 class AnonymousInstanceParamName(ParamName):
     def infer(self):
         param_node = search_ancestor(self.tree_name, 'param')
-        if param_node.position_nr == 0:
+        # TODO I think this should not belong here. It's not even really true,
+        #      because classmethod and other descriptors can change it.
+        if param_node.position_index == 0:
             # This is a speed optimization, to return the self param (because
             # it's known). This only affects anonymous instances.
             return set([self.parent_context.instance])
@@ -139,7 +155,7 @@ class AbstractUsedNamesFilter(AbstractFilter):
 
     def __init__(self, context, parser_scope):
         self._parser_scope = parser_scope
-        self._used_names = self._parser_scope.get_root_node().used_names
+        self._used_names = self._parser_scope.get_root_node().get_used_names()
         self.context = context
 
     def get(self, name):
@@ -189,7 +205,7 @@ class ParserTreeFilter(AbstractUsedNamesFilter):
         if parent.type == 'trailer':
             return False
         base_node = parent if parent.type in ('classdef', 'funcdef') else name
-        return base_node.get_parent_scope() == self._parser_scope
+        return get_parent_scope(base_node) == self._parser_scope
 
     def _check_flows(self, names):
         for name in sorted(names, key=lambda name: name.start_pos, reverse=True):
@@ -275,7 +291,7 @@ def get_global_filters(evaluator, context, until_position, origin_scope):
     ...     y = None
     ... '''))
     >>> module_node = script._get_module_node()
-    >>> scope = module_node.subscopes[0]
+    >>> scope = next(module_node.iter_funcdefs())
     >>> scope
     <Function: func@3-5>
     >>> context = script._get_module().create_context(scope)

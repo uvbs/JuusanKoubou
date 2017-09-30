@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from .common import match1, maybe_print, download_urls, get_filename, parse_host, set_proxy, unset_proxy
+from .common import match1, maybe_print, download_urls, get_filename, parse_host, set_proxy, unset_proxy, get_content, dry_run
 from .common import print_more_compatible as print
 from .util import log
 from . import json_output
@@ -22,12 +22,17 @@ class VideoExtractor():
         self.url = None
         self.title = None
         self.vid = None
+        self.m3u8_url = None
         self.streams = {}
         self.streams_sorted = []
         self.audiolang = None
         self.password_protected = False
         self.dash_streams = {}
         self.caption_tracks = {}
+        self.out = False
+        self.ua = None
+        self.referer = None
+        self.danmuku = None
 
         if args:
             self.url = args[0]
@@ -39,6 +44,8 @@ class VideoExtractor():
         if 'extractor_proxy' in kwargs and kwargs['extractor_proxy']:
             set_proxy(parse_host(kwargs['extractor_proxy']))
         self.prepare(**kwargs)
+        if self.out:
+            return
         if 'extractor_proxy' in kwargs and kwargs['extractor_proxy']:
             unset_proxy()
 
@@ -99,7 +106,11 @@ class VideoExtractor():
             print("      quality:       %s" % stream['quality'])
 
         if 'size' in stream and stream['container'].lower() != 'm3u8':
-            print("      size:          %s MiB (%s bytes)" % (round(stream['size'] / 1048576, 1), stream['size']))
+            if stream['size'] != float('inf')  and stream['size'] != 0:
+                print("      size:          %s MiB (%s bytes)" % (round(stream['size'] / 1048576, 1), stream['size']))
+
+        if 'm3u8_url' in stream:
+            print("      m3u8_url:      {}".format(stream['m3u8_url']))
 
         if 'itag' in stream:
             print("    # download-with: %s" % log.sprint("you-get --itag=%s [URL]" % stream_id, log.UNDERLINE))
@@ -199,15 +210,23 @@ class VideoExtractor():
                 ext = self.dash_streams[stream_id]['container']
                 total_size = self.dash_streams[stream_id]['size']
 
+            if ext == 'm3u8':
+                ext = 'mp4'
+
             if not urls:
                 log.wtf('[Failed] Cannot extract video source.')
             # For legacy main()
-            download_urls(urls, self.title, ext, total_size,
+            headers = {}
+            if self.ua is not None:
+                headers['User-Agent'] = self.ua
+            if self.referer is not None:
+                headers['Referer'] = self.referer
+            download_urls(urls, self.title, ext, total_size, headers=headers,
                           output_dir=kwargs['output_dir'],
                           merge=kwargs['merge'],
                           av=stream_id in self.dash_streams)
             if 'caption' not in kwargs or not kwargs['caption']:
-                print('Skipping captions.')
+                print('Skipping captions or danmuku.')
                 return
             for lang in self.caption_tracks:
                 filename = '%s.%s.srt' % (get_filename(self.title), lang)
@@ -217,8 +236,14 @@ class VideoExtractor():
                           'w', encoding='utf-8') as x:
                     x.write(srt)
                 print('Done.')
+            if self.danmuku is not None and not dry_run:
+                filename = '{}.cmt.xml'.format(get_filename(self.title))
+                print('Downloading {} ...\n'.format(filename))
+                with open(os.path.join(kwargs['output_dir'], filename), 'w', encoding='utf8') as fp:
+                    fp.write(self.danmuku)
 
             # For main_dev()
             #download_urls(urls, self.title, self.streams[stream_id]['container'], self.streams[stream_id]['size'])
-
-        self.__init__()
+        keep_obj = kwargs.get('keep_obj', False)
+        if not keep_obj:
+            self.__init__()

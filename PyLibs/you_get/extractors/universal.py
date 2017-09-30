@@ -12,9 +12,11 @@ def universal_download(url, output_dir='.', merge=True, info_only=False, **kwarg
         content_type = get_head(url, headers=fake_headers, get_method='GET')['Content-Type']
     if content_type.startswith('text/html'):
         try:
-            embed_download(url, output_dir, merge=merge, info_only=info_only)
-        except: pass
-        else: return
+            embed_download(url, output_dir=output_dir, merge=merge, info_only=info_only, **kwargs)
+        except Exception:
+            pass
+        else:
+            return
 
     domains = url.split('/')[2].split('.')
     if len(domains) > 2: domains = domains[1:]
@@ -28,6 +30,17 @@ def universal_download(url, output_dir='.', merge=True, info_only=False, **kwarg
         page_title = r1(r'<title>([^<]*)', page)
         if page_title:
             page_title = unescape_html(page_title)
+
+        hls_urls = re.findall(r'(https?://[^;"\'\\]+' + '\.m3u8?' +
+                              r'[^;"\'\\]*)', page)
+        if hls_urls:
+            for hls_url in hls_urls:
+                type_, ext, size = url_info(hls_url)
+                print_info(site_info, page_title, type_, size)
+                if not info_only:
+                    download_url_ffmpeg(url=hls_url, title=page_title,
+                                        ext='mp4', output_dir=output_dir)
+            return
 
         # most common media file extensions on the Internet
         media_exts = ['\.flv', '\.mp3', '\.mp4', '\.webm',
@@ -53,6 +66,13 @@ def universal_download(url, output_dir='.', merge=True, info_only=False, **kwarg
         urls += re.findall(r'href="(https?://[^"]+\.jpe?g)"', page)
         urls += re.findall(r'href="(https?://[^"]+\.png)"', page)
         urls += re.findall(r'href="(https?://[^"]+\.gif)"', page)
+
+        # MPEG-DASH MPD
+        mpd_urls = re.findall(r'src="(https?://[^"]+\.mpd)"', page)
+        for mpd_url in mpd_urls:
+            cont = get_content(mpd_url)
+            base_url = r1(r'<BaseURL>(.*)</BaseURL>', cont)
+            urls += [ r1(r'(.*/)[^/]*', mpd_url) + base_url ]
 
         # have some candy!
         candies = []
